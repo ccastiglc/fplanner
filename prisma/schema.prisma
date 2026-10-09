@@ -1,71 +1,353 @@
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  organization  Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  organizationId String?
+  role          Role      @default(CLIENT)
+  status        UserStatus @default(ONBOARDING)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-model AiUsage {
-  id           String   @id @default(cuid())
-  orgId        String   @default("fredo")
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role         String?
-  mode         String?
-  provider     String?
-  model        String?
-  tool         String?
-  inputTokens  Int?
-  outputTokens Int?
-  costUsd      Float?
-  latencyMs    Int?
-  contextHash  String?
-  truncated    Boolean  @default(false)
-  status       String?
-  createdAt    DateTime @default(now())
+  @@ index([email])
+  @@ index([role])
+  @@ index([organizationId])
 }
 
-model SettingsAudit {
-  id           String   @id @default(cuid())
-  orgId        String   @default("fredo")
-  actorUserId  String
-  actor        User     @relation(fields: [actorUserId], references: [id], onDelete: Cascade)
-  action       String
-  ipAddress    String?
-  userAgent    String?
-  createdAt    DateTime @default(now())
+enum Role {
+  ADMIN
+  DJ
+  CLIENT
 }
 
-model MagicLinkToken {
-  id        String    @id @default(cuid())
-  orgId     String    @default("fredo")
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash String
-  expiresAt DateTime
-  usedAt    DateTime?
-  ipAddress String?
-  userAgent String?
-  createdAt DateTime  @default(now())
+enum UserStatus {
+  ONBOARDING
+  ACTIVE
+  SUSPENDED
+}
+
+model Organization {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  plan        String    @default("free")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  users       User[]
+  settings    OrganizationSettings @unique
+  events      Event[]
+  clients     Client[]
+  vendors     Vendor[]
+}
+
+model OrganizationSettings {
+  id              String @id @default(cuid())
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId  String
+  primaryColor    String    @default("24 95% 53%")   /* Fredo orange */
+  secondaryColor  String    @default("222.2 84% 4.9%") /* dark foreground */
+  accentColor     String    @default("210 40% 98%")   /* light foreground */
+  backgroundColor String    @default("0 0% 100%")     /* white */
+  logoUrl         String?   @default(null)
+  faviconUrl      String?   @default(null)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Client {
+  id                String    @id @default(cuid())
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId    String
+  name              String
+  contactName       String
+  email             String
+  phone             String?
+  address           String?
+  city              String?
+  state             String?
+  postalCode        String?
+  country           String?
+  companyType       String?   @default("individual")
+  taxId             String?
+  preferences       Json?
+  status            String    @default("active")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  events            Event[]
+}
+
+model Venue {
+  id                String    @id @default(cuid())
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId    String
+  name              String
+  address           String?
+  city              String?
+  state             String?
+  postalCode        String?
+  country           String?
+  capacity          Int?
+  features          Json?     @default("[]")
+  hourlyRate        Decimal?  @default(0)
+  status            String    @default("active")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  events            Event[]
+}
+
+model Event {
+  id                String    @id @default(cuid())
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId    String
+  client            Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  clientId          String?
+  name              String
+  description       String?
+  status            String    @default("planned")   /* planned, confirmed, completed, cancelled */
+  type              String    @default("event")   /* event, wedding, corporate, etc. */
+  startDateTime     DateTime
+  endDateTime       DateTime
+  timezone          String    @default("UTC")
+  venue             Venue?    @relation(fields: [venueId], references: [id], onDelete: SetNull)
+  venueId           String?
+  address           String?
+  expectedAttendees Int?
+  budget            Decimal?  @default(0)
+  currency          String    @default("USD")
+  coverImage        String?
+  coverVideo        String?
+  tags              Json?     @default("[]")
+  notes             String?
+  createdBy         String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  staffAssignments  StaffAssignment[]
+  vendorAssignments VendorAssignment[]
+  timeline          Timeline?
+  timelineId        String?
+  payments          Payment[]
+  musicSelections   MusicSelection[]
+  calendarIcsPath   String?   @default(null)
+  reminderSent      Boolean   @default(false)
+  reminderDate      DateTime?
+}
+
+model Staff {
+  id                String    @id @default(cuid())
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId    String
+  user              User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId            String?
+  name              String
+  email             String?
+  phone             String?
+  specialty         String?   @default("dj")
+  experienceLevel   String?   @default("intermediate")
+  status            String    @default("available")
+  hourlyRate        Decimal?  @default(0)
+  notes             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  eventAssignments  StaffAssignment[]
+}
+
+model StaffAssignment {
+  id              String @id @default(cuid())
+  event           Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId         String
+  staff           Staff      @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  staffId         String
+  role            String     @default("dj")
+  assignedAt      DateTime   @default(now())
+  status          String     @default("confirmed")
+}
+
+model Vendor {
+  id                String    @id @default(cuid())
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId    String
+  name              String
+  contactName       String
+  email             String
+  phone             String?
+  category          String    @default("venue")   /* venue, catering, equipment, etc. */
+  status            String    @default("active")
+  rating            Decimal?  @default(0)
+  priceRange        String?
+  website           String?
+  notes             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  eventAssignments  VendorAssignment[]
+}
+
+model VendorAssignment {
+  id              String @id @default(cuid())
+  event           Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId         String
+  vendor          Vendor     @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorId        String
+  serviceType     String
+  assignedAt      DateTime   @default(now())
+  status          String     @default("pending")
+}
+
+model Service {
+  id                String    @id @default(cuid())
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId    String
+  name              String
+  description       String?
+  category          String    @default("standard")   /* standard, premium, platinum */
+  price             Decimal
+  duration          Int?      @default(60)   /* minutes */
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  eventServices     EventService[]
+}
+
+model EventService {
+  id              String @id @default(cuid())
+  event           Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId         String
+  service         Service    @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  serviceId       String
+  quantity        Int      @default(1)
+  specialRequests String?
+  createdAt       DateTime @default(now())
+}
+
+model Timeline {
+  id                String    @id @default(cuid())
+  event           Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId         String
+  title           String
+  startTime       DateTime
+  endTime         DateTime
+  description     String?
+  order           Int
+  isCollapsed     Boolean   @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  steps           TimelineStep[]
+}
+
+model TimelineStep {
+  id              String @id @default(cuid())
+  timeline        Timeline   @relation(fields: [timelineId], references: [id], onDelete: Cascade)
+  timelineId      String
+  title           String
+  time            DateTime
+  description     String?
+  isCompleted     Boolean   @default(false)
+  order           Int
+  createdAt       DateTime @default(now())
+}
+
+model Payment {
+  id                String    @id @default(cuid())
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId    String
+  event             Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  eventId           String?
+  client            Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  clientId          String?
+  amount            Decimal
+  currency          String    @default("USD")
+  status            String    @default("pending")   /* pending, paid, failed, refunded */
+  type              String    @default("payment")   /* payment, deposit, refund, payout */
+  stripePaymentId   String?
+  paymentDate       DateTime?
+  dueDate           DateTime
+  notes             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model MusicSelection {
+  id                String    @id @default(cuid())
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId    String
+  event             Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  eventId           String?
+  title             String
+  artist            String?
+  album             String?
+  duration          Int?
+  filepath          String?
+  type              String    @default("track")   /* track, playlist, jingle */
+  status            String    @default("selected")   /* selected, approved, rejected */
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model AiSession {
+  id                String    @id @default(cuid())
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId    String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String
+  event             Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  eventId           String?
+  prompt            String
+  response          Json?
+  tokensUsed        Int?
+  costUsd           Float?
+  model             String    @default("gpt-4o")
+  createdAt         DateTime  @default(now())
+}
+
+model Notification {
+  id                String    @id @default(cuid())
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId    String
+  user              User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId            String?
+  type              String    @default("info")   /* info, warning, error, reminder */
+  title             String
+  message           String
+  actionUrl         String?
+  isRead            Boolean   @default(false)
+  actionLabel       String?
+  createdAt         DateTime  @default(now())
 }
 
 model ImportBatch {
-  id         String      @id @default(cuid())
-  orgId      String      @default("fredo")
-  fileName   String?
-  status     String?
-  count      Int?
-  createdBy  String?
-  startedAt  DateTime?
-  finishedAt DateTime?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  rows       ImportRow[]
+  id                String    @id @default(cuid())
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId    String
+  source            String    @default("djep")   /* djep, csv, manual */
+  fileName          String?
+  status            String    @default("pending")   /* pending, processing, completed, failed */
+  totalRecords      Int       @default(0)
+  processedRecords  Int       @default(0)
+  errorCount        Int       @default(0)
+  startedAt         DateTime?
+  finishedAt        DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model ImportRow {
-  id            String      @id @default(cuid())
-  orgId         String      @default("fredo")
-  importBatchId String
-  importBatch   ImportBatch @relation(fields: [importBatchId], references: [id], onDelete: Cascade)
-  raw           Json?
-  mapped        Json?
-  errors        Json?
-  resolved      Boolean     @default(false)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id                String    @id @default(cuid())
+  importBatch       ImportBatch @relation(fields: [importBatchId], references: [id], onDelete: Cascade)
+  importBatchId     String
+  rawData           Json?
+  mappedTo          String?   /* model name */
+  status            String    @default("pending")   /* pending, success, failed */
+  errorMessage      String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime @updatedAt
 }
