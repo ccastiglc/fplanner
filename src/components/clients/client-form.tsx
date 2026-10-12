@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import type { Client, ClientAdditionalContact, ClientPerson } from "@prisma/client";
+import type { Client, ClientAdditionalContact, ClientPerson, ClientPhoneNumber } from "@prisma/client";
 import { deleteClient, saveClient } from "@/app/actions/clients";
-import ConfirmDeleteButton from "@/components/common/confirm-delete-button";
 import ClientPhotoUpload from "@/components/clients/client-photo-upload";
+import ConfirmDeleteButton from "@/components/common/confirm-delete-button";
 
 const CLIENT_ROLES = [
   { value: "client", label: "Client" },
@@ -21,32 +21,69 @@ const PHONE_TYPES = [
   { value: "other", label: "Other" },
 ] as const;
 
+type PhoneDraft = Pick<ClientPhoneNumber, "number" | "type"> & { id?: string };
 type PersonDraft = {
   id?: string;
   name: string;
+  pronunciation: string;
   role: string;
   email: string;
-  phone: string;
-  phoneType: string;
   photoUrl: string;
   photoStorageKey?: string | null;
+  phoneNumbers: PhoneDraft[];
 };
-
 type ContactDraft = {
   id?: string;
   name: string;
+  pronunciation: string;
   role: string;
-  phone: string;
   email: string;
+  phoneNumbers: PhoneDraft[];
 };
-
 type ClientProfile = Client & {
-  persons: ClientPerson[];
-  additionalContacts: ClientAdditionalContact[];
+  phoneNumbers: ClientPhoneNumber[];
+  persons: (ClientPerson & { phoneNumbers: ClientPhoneNumber[] })[];
+  additionalContacts: (ClientAdditionalContact & { phoneNumbers: ClientPhoneNumber[] })[];
 };
 
 const inputClass = "mt-1.5 w-full rounded-xl border border-slate-300 px-3.5 py-3 font-normal outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100";
 const selectClass = "mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 font-normal outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100";
+
+function PhoneNumbersEditor({
+  label,
+  phones,
+  onChange,
+}: {
+  label: string;
+  phones: PhoneDraft[];
+  onChange: (phones: PhoneDraft[]) => void;
+}) {
+  function updatePhone(index: number, patch: Partial<PhoneDraft>) {
+    onChange(phones.map((phone, phoneIndex) => phoneIndex === index ? { ...phone, ...patch } : phone));
+  }
+
+  return (
+    <fieldset className="space-y-3 sm:col-span-2">
+      <legend className="mb-1 text-sm font-medium text-slate-700">{label}</legend>
+      {phones.map((phone, index) => (
+        <div key={phone.id ?? `${label}-${index}`} className="grid gap-3 rounded-xl bg-slate-50 p-3 sm:grid-cols-[minmax(0,1fr)_180px_auto]">
+          <label className="block text-sm text-slate-600">
+            Phone number
+            <input type="tel" inputMode="tel" value={phone.number} onChange={(event) => updatePhone(index, { number: event.target.value })} maxLength={40} required className={inputClass} />
+          </label>
+          <label className="block text-sm text-slate-600">
+            Type
+            <select value={phone.type} onChange={(event) => updatePhone(index, { type: event.target.value })} className={selectClass}>
+              {PHONE_TYPES.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}
+            </select>
+          </label>
+          <button type="button" onClick={() => onChange(phones.filter((_, phoneIndex) => phoneIndex !== index))} className="self-end rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50">Remove</button>
+        </div>
+      ))}
+      <button type="button" onClick={() => onChange([...phones, { number: "", type: "mobile" }])} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-white">Add phone number</button>
+    </fieldset>
+  );
+}
 
 export default function ClientForm({
   client,
@@ -61,24 +98,35 @@ export default function ClientForm({
   const [state, setState] = useState(client?.state ?? "");
   const [country, setCountry] = useState(client?.country || "USA");
   const [postalStatus, setPostalStatus] = useState("");
+  const [clientPhones, setClientPhones] = useState<PhoneDraft[]>(() => {
+    if (client?.phoneNumbers.length) {
+      return client.phoneNumbers.map(({ id, number, type }) => ({ id, number, type }));
+    }
+    return client?.phone ? [{ number: client.phone, type: client.phoneType ?? "mobile" }] : [];
+  });
   const [persons, setPersons] = useState<PersonDraft[]>(
     client?.persons.map((person) => ({
       id: person.id,
       name: person.name,
+      pronunciation: person.pronunciation ?? "",
       role: person.role,
       email: person.email ?? "",
-      phone: person.phone ?? "",
-      phoneType: person.phoneType ?? "mobile",
       photoUrl: person.photoUrl ?? "",
       photoStorageKey: person.photoStorageKey,
+      phoneNumbers: person.phoneNumbers.length
+        ? person.phoneNumbers.map(({ id, number, type }) => ({ id, number, type }))
+        : person.phone ? [{ number: person.phone, type: person.phoneType ?? "mobile" }] : [],
     })) ?? []
   );
   const [contacts, setContacts] = useState<ContactDraft[]>(
     client?.additionalContacts.map((contact) => ({
       id: contact.id,
       name: contact.name,
+      pronunciation: contact.pronunciation ?? "",
       role: contact.role,
-      phone: contact.phone ?? "",
+      phoneNumbers: contact.phoneNumbers.length
+        ? contact.phoneNumbers.map(({ id, number, type }) => ({ id, number, type }))
+        : contact.phone ? [{ number: contact.phone, type: "mobile" }] : [],
       email: contact.email ?? "",
     })) ?? []
   );
@@ -158,6 +206,7 @@ export default function ClientForm({
       )}
       <form action={saveClient} className="space-y-7 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
         {client && <input type="hidden" name="clientId" value={client.id} />}
+        <input type="hidden" name="clientPhonesJson" value={JSON.stringify(clientPhones)} />
         <input type="hidden" name="personsJson" value={JSON.stringify(persons)} />
         <input type="hidden" name="contactsJson" value={JSON.stringify(contacts)} />
 
@@ -168,26 +217,21 @@ export default function ClientForm({
             <input name="name" required maxLength={160} defaultValue={client?.name ?? ""} className={inputClass} />
           </label>
           <label className="block text-sm font-medium text-slate-700">
+            Phonetic pronunciation
+            <input name="pronunciation" maxLength={160} defaultValue={client?.pronunciation ?? ""} placeholder="How to pronounce the name" className={inputClass} />
+          </label>
+          <label className="block text-sm font-medium text-slate-700">
             Role
             <select name="role" defaultValue={client?.role ?? "client"} className={selectClass}>
               {CLIENT_ROLES.map((role) => <option key={role.value} value={role.value}>{role.label}</option>)}
               {client?.role && !CLIENT_ROLES.some((role) => role.value === client.role) && <option value={client.role}>{client.role}</option>}
             </select>
           </label>
-          <label className="block text-sm font-medium text-slate-700">
-            Phone number
-            <input name="phone" type="tel" maxLength={40} defaultValue={client?.phone ?? ""} className={inputClass} />
-          </label>
-          <label className="block text-sm font-medium text-slate-700">
-            Phone type
-            <select name="phoneType" defaultValue={client?.phoneType ?? "mobile"} className={selectClass}>
-              {PHONE_TYPES.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}
-            </select>
-          </label>
           <label className="block text-sm font-medium text-slate-700 sm:col-span-2">
             Email address
             <input name="email" type="email" required maxLength={254} defaultValue={client?.email ?? ""} className={inputClass} />
           </label>
+          <PhoneNumbersEditor label="Phone numbers" phones={clientPhones} onChange={setClientPhones} />
           <label className="block text-sm font-medium text-slate-700 sm:col-span-2">
             Photo URL
             <input name="photoUrl" type="url" placeholder="https://example.com/photo.jpg" value={photoUrl} onChange={(event) => setPhotoUrl(event.target.value)} className={inputClass} />
@@ -225,7 +269,7 @@ export default function ClientForm({
               <h2 id="persons-heading" className="text-base font-semibold text-slate-900">Additional persons</h2>
               <p className="mt-1 text-sm text-slate-500">People in this client group, such as both partners in a wedding.</p>
             </div>
-            <button type="button" onClick={() => setPersons((current) => [...current, { name: "", role: "bride", email: "", phone: "", phoneType: "mobile", photoUrl: "" }])} className="rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Add person</button>
+            <button type="button" onClick={() => setPersons((current) => [...current, { name: "", pronunciation: "", role: "client", email: "", photoUrl: "", phoneNumbers: [] }])} className="rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Add person</button>
           </div>
           {persons.map((person, index) => {
             const personPhoto = person.photoStorageKey
@@ -243,25 +287,20 @@ export default function ClientForm({
                     <input value={person.name} onChange={(event) => updatePerson(index, { name: event.target.value })} required maxLength={160} className={inputClass} />
                   </label>
                   <label className="block text-sm font-medium text-slate-700">
+                    Phonetic pronunciation
+                    <input value={person.pronunciation} onChange={(event) => updatePerson(index, { pronunciation: event.target.value })} maxLength={160} placeholder="How to pronounce the name" className={inputClass} />
+                  </label>
+                  <label className="block text-sm font-medium text-slate-700">
                     Role
                     <select value={person.role} onChange={(event) => updatePerson(index, { role: event.target.value })} className={selectClass}>
                       {CLIENT_ROLES.map((role) => <option key={role.value} value={role.value}>{role.label}</option>)}
                     </select>
                   </label>
                   <label className="block text-sm font-medium text-slate-700">
-                    Phone number
-                    <input type="tel" value={person.phone} onChange={(event) => updatePerson(index, { phone: event.target.value })} maxLength={40} className={inputClass} />
-                  </label>
-                  <label className="block text-sm font-medium text-slate-700">
-                    Phone type
-                    <select value={person.phoneType} onChange={(event) => updatePerson(index, { phoneType: event.target.value })} className={selectClass}>
-                      {PHONE_TYPES.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}
-                    </select>
-                  </label>
-                  <label className="block text-sm font-medium text-slate-700 sm:col-span-2">
                     Email address
                     <input type="email" value={person.email} onChange={(event) => updatePerson(index, { email: event.target.value })} maxLength={254} className={inputClass} />
                   </label>
+                  <PhoneNumbersEditor label="Phone numbers" phones={person.phoneNumbers} onChange={(phoneNumbers) => updatePerson(index, { phoneNumbers })} />
                   <label className="block text-sm font-medium text-slate-700 sm:col-span-2">
                     Photo URL
                     <input type="url" value={person.photoUrl} onChange={(event) => updatePerson(index, { photoUrl: event.target.value, photoStorageKey: null })} placeholder="https://example.com/photo.jpg" className={inputClass} />
@@ -299,7 +338,7 @@ export default function ClientForm({
               <h2 id="additional-contacts-heading" className="text-base font-semibold text-slate-900">Additional Contacts</h2>
               <p className="mt-1 text-sm text-slate-500">Other people connected to the client, such as a parent or planner.</p>
             </div>
-            <button type="button" onClick={() => setContacts((current) => [...current, { name: "", role: "", phone: "", email: "" }])} className="rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Add contact</button>
+            <button type="button" onClick={() => setContacts((current) => [...current, { name: "", pronunciation: "", role: "", email: "", phoneNumbers: [] }])} className="rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Add contact</button>
           </div>
           {contacts.map((contact, index) => (
             <article key={contact.id ?? `new-contact-${index}`} className="grid gap-4 rounded-xl border border-slate-200 p-4 sm:grid-cols-2">
@@ -312,17 +351,18 @@ export default function ClientForm({
                 <input value={contact.name} onChange={(event) => updateContact(index, { name: event.target.value })} required maxLength={160} className={inputClass} />
               </label>
               <label className="block text-sm font-medium text-slate-700">
-                Role
-                <input value={contact.role} onChange={(event) => updateContact(index, { role: event.target.value })} required maxLength={80} placeholder="Mother of Bride" className={inputClass} />
+                Phonetic pronunciation
+                <input value={contact.pronunciation} onChange={(event) => updateContact(index, { pronunciation: event.target.value })} maxLength={160} placeholder="How to pronounce the name" className={inputClass} />
               </label>
               <label className="block text-sm font-medium text-slate-700">
-                Phone
-                <input type="tel" value={contact.phone} onChange={(event) => updateContact(index, { phone: event.target.value })} maxLength={40} className={inputClass} />
+                Role
+                <input value={contact.role} onChange={(event) => updateContact(index, { role: event.target.value })} required maxLength={80} placeholder="Mother of Bride" className={inputClass} />
               </label>
               <label className="block text-sm font-medium text-slate-700">
                 Email
                 <input type="email" value={contact.email} onChange={(event) => updateContact(index, { email: event.target.value })} maxLength={254} className={inputClass} />
               </label>
+              <PhoneNumbersEditor label="Phone numbers" phones={contact.phoneNumbers} onChange={(phoneNumbers) => updateContact(index, { phoneNumbers })} />
             </article>
           ))}
         </section>

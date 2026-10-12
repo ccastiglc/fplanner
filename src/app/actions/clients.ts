@@ -3,19 +3,24 @@
 import { z } from "zod";
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import type { ClientPhoneNumber, Prisma } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { removeClientPhoto } from "@/lib/client-photo-storage";
 
 const optionalText = z.string().trim().max(2000).optional();
 const optionalEmail = z.string().trim().max(254).email().or(z.literal(""));
+const phoneInput = z.object({
+  id: z.string().optional(),
+  number: z.string().trim().min(1).max(40),
+  type: z.enum(["mobile", "home", "work", "fax", "other"]),
+});
 
 const clientInput = z.object({
   name: z.string().trim().min(1).max(160),
+  pronunciation: z.string().trim().max(160).optional(),
   role: z.enum(["client", "bride", "groom"]),
   email: z.string().trim().email().max(254),
-  phone: z.string().trim().max(40).optional(),
-  phoneType: z.enum(["mobile", "home", "work", "fax", "other"]),
   address: optionalText,
   city: z.string().trim().max(120).optional(),
   state: z.string().trim().max(120).optional(),
@@ -28,18 +33,19 @@ const clientInput = z.object({
 const personInput = z.object({
   id: z.string().optional(),
   name: z.string().trim().min(1).max(160),
+  pronunciation: z.string().trim().max(160).optional(),
   role: z.enum(["client", "bride", "groom"]),
   email: optionalEmail,
-  phone: z.string().trim().max(40).optional(),
-  phoneType: z.enum(["mobile", "home", "work", "fax", "other"]),
+  phoneNumbers: z.array(phoneInput).max(8),
   photoUrl: z.string().trim().max(2048).optional(),
 });
 
 const additionalContactInput = z.object({
   id: z.string().optional(),
   name: z.string().trim().min(1).max(160),
+  pronunciation: z.string().trim().max(160).optional(),
   role: z.string().trim().min(1).max(80),
-  phone: z.string().trim().max(40).optional(),
+  phoneNumbers: z.array(phoneInput).max(8),
   email: optionalEmail,
 });
 
@@ -66,12 +72,14 @@ function clientPhotoData(value?: string | null) {
 
 function personData(person: z.infer<typeof personInput>) {
   const photoUrl = clientPhotoData(person.photoUrl);
+  const primaryPhone = person.phoneNumbers[0];
   return {
     name: person.name,
+    pronunciation: person.pronunciation?.trim() || null,
     role: person.role,
     email: person.email?.trim() || null,
-    phone: person.phone?.trim() || null,
-    phoneType: person.phoneType,
+    phone: primaryPhone?.number ?? null,
+    phoneType: primaryPhone?.type ?? "mobile",
     photoUrl,
     ...(photoUrl ? { photoStorageKey: null, photoMimeType: null } : {}),
   };
@@ -80,10 +88,42 @@ function personData(person: z.infer<typeof personInput>) {
 function additionalContactData(contact: z.infer<typeof additionalContactInput>) {
   return {
     name: contact.name,
+    pronunciation: contact.pronunciation?.trim() || null,
     role: contact.role,
-    phone: contact.phone?.trim() || null,
+    phone: contact.phoneNumbers[0]?.number ?? null,
     email: contact.email?.trim() || null,
   };
+}
+
+function phoneIdsAreOwned(submitted: z.infer<typeof phoneInput>[], existing: ClientPhoneNumber[]) {
+  const ids = submitted.flatMap((phone) => phone.id ? [phone.id] : []);
+  return new Set(ids).size === ids.length && ids.every((id) => existing.some((phone) => phone.id === id));
+}
+
+async function syncPhoneNumbers(
+  transaction: Prisma.TransactionClient,
+  owner: { clientId: string } | { personId: string } | { additionalContactId: string },
+  existing: ClientPhoneNumber[],
+  submitted: z.infer<typeof phoneInput>[]
+) {
+  const ids = submitted.flatMap((phone) => phone.id ? [phone.id] : []);
+
+  await transaction.clientPhoneNumber.deleteMany({
+    where: { ...owner, ...(ids.length ? { id: { notIn: ids } } : {}) },
+  });
+
+  for (const phone of submitted) {
+    if (phone.id && existing.some((item) => item.id === phone.id)) {
+      await transaction.clientPhoneNumber.update({
+        where: { id: phone.id },
+        data: { number: phone.number, type: phone.type },
+      });
+    } else if (!phone.id) {
+      await transaction.clientPhoneNumber.create({
+        data: { ...owner, number: phone.number, type: phone.type },
+      });
+    }
+  }
 }
 
 export async function saveClient(formData: FormData) {
@@ -92,11 +132,12 @@ export async function saveClient(formData: FormData) {
 
   const clientId = String(formData.get("clientId") ?? "").trim();
   const result = clientInput.safeParse(Object.fromEntries(formData.entries()));
+  const clientPhonesResult = parseArray(formData.get("clientPhonesJson"), phoneInput);
   const personsResult = parseArray(formData.get("personsJson"), personInput);
   const contactsResult = parseArray(formData.get("contactsJson"), additionalContactInput);
   const errorPath = clientId ? `/dashboard/clients/${clientId}` : "/dashboard/clients/new";
 
-  if (!result.success || !personsResult.success || !contactsResult.success) {
+  if (!result.success || !clientPhonesResult.success || !personsResult.success || !contactsResult.success) {
     redirect(`${errorPath}?error=invalid`);
   }
 
@@ -112,14 +153,16 @@ export async function saveClient(formData: FormData) {
 
   const persons = personsResult.data;
   const contacts = contactsResult.data;
+  const clientPhones = clientPhonesResult.data;
 
   const data = {
     name: input.name,
+    pronunciation: input.pronunciation?.trim() || null,
     contactName: input.name,
     role: input.role,
     email: input.email.toLowerCase(),
-    phone: input.phone?.trim() || null,
-    phoneType: input.phoneType,
+    phone: clientPhones[0]?.number ?? null,
+    phoneType: clientPhones[0]?.type ?? "mobile",
     address: input.address?.trim() || null,
     city: input.city?.trim() || null,
     state: input.state?.trim() || null,
@@ -140,8 +183,19 @@ export async function saveClient(formData: FormData) {
       data: {
         ...data,
         organization: { connect: { id: organizationId } },
-        persons: { create: persons.map(personData) },
-        additionalContacts: { create: contacts.map(additionalContactData) },
+        phoneNumbers: { create: clientPhones.map(({ number, type }) => ({ number, type })) },
+        persons: {
+          create: persons.map((person) => ({
+            ...personData(person),
+            phoneNumbers: { create: person.phoneNumbers.map(({ number, type }) => ({ number, type })) },
+          })),
+        },
+        additionalContacts: {
+          create: contacts.map((contact) => ({
+            ...additionalContactData(contact),
+            phoneNumbers: { create: contact.phoneNumbers.map(({ number, type }) => ({ number, type })) },
+          })),
+        },
       },
     });
     revalidatePath("/dashboard/clients");
@@ -153,7 +207,11 @@ export async function saveClient(formData: FormData) {
       id: clientId,
       ...(session.user.organizationId ? { organizationId: session.user.organizationId } : {}),
     },
-    include: { persons: true, additionalContacts: true },
+    include: {
+      phoneNumbers: true,
+      persons: { include: { phoneNumbers: true } },
+      additionalContacts: { include: { phoneNumbers: true } },
+    },
   });
   if (!existing) notFound();
 
@@ -163,6 +221,15 @@ export async function saveClient(formData: FormData) {
   const existingContactIds = new Set(existing.additionalContacts.map((contact) => contact.id));
 
   if (
+    !phoneIdsAreOwned(clientPhones, existing.phoneNumbers) ||
+    persons.some((person) => {
+      const oldPerson = existing.persons.find((item) => item.id === person.id);
+      return person.id ? !oldPerson || !phoneIdsAreOwned(person.phoneNumbers, oldPerson.phoneNumbers) : person.phoneNumbers.some((phone) => phone.id);
+    }) ||
+    contacts.some((contact) => {
+      const oldContact = existing.additionalContacts.find((item) => item.id === contact.id);
+      return contact.id ? !oldContact || !phoneIdsAreOwned(contact.phoneNumbers, oldContact.phoneNumbers) : contact.phoneNumbers.some((phone) => phone.id);
+    }) ||
     personIds.some((id) => !existingPersonIds.has(id)) ||
     contactIds.some((id) => !existingContactIds.has(id))
   ) {
@@ -189,6 +256,7 @@ export async function saveClient(formData: FormData) {
         photoMimeType: photoUrl ? null : existing.photoMimeType,
       },
     });
+    await syncPhoneNumbers(transaction, { clientId }, existing.phoneNumbers, clientPhones);
 
     await transaction.clientPerson.deleteMany({
       where: {
@@ -203,10 +271,15 @@ export async function saveClient(formData: FormData) {
           where: { id: person.id },
           data: personData(person),
         });
+        const oldPerson = existing.persons.find((item) => item.id === person.id);
+        if (oldPerson) {
+          await syncPhoneNumbers(transaction, { personId: person.id }, oldPerson.phoneNumbers, person.phoneNumbers);
+        }
       } else {
-        await transaction.clientPerson.create({
+        const created = await transaction.clientPerson.create({
           data: { ...personData(person), clientId },
         });
+        await syncPhoneNumbers(transaction, { personId: created.id }, [], person.phoneNumbers);
       }
     }
 
@@ -223,10 +296,15 @@ export async function saveClient(formData: FormData) {
           where: { id: contact.id },
           data: additionalContactData(contact),
         });
+        const oldContact = existing.additionalContacts.find((item) => item.id === contact.id);
+        if (oldContact) {
+          await syncPhoneNumbers(transaction, { additionalContactId: contact.id }, oldContact.phoneNumbers, contact.phoneNumbers);
+        }
       } else {
-        await transaction.clientAdditionalContact.create({
+        const created = await transaction.clientAdditionalContact.create({
           data: { ...additionalContactData(contact), clientId },
         });
+        await syncPhoneNumbers(transaction, { additionalContactId: created.id }, [], contact.phoneNumbers);
       }
     }
   });

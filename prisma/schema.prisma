@@ -91,6 +91,7 @@ model Client {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String
   name           String
+  pronunciation  String?
   role           String       @default("client")
   contactName    String
   email          String
@@ -116,6 +117,7 @@ model Client {
   payments Payment[]
   persons  ClientPerson[]
   additionalContacts ClientAdditionalContact[]
+  phoneNumbers ClientPhoneNumber[] @relation("ClientPhoneNumbers")
 }
 
 model ClientPerson {
@@ -123,6 +125,7 @@ model ClientPerson {
   client          Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
   clientId        String
   name            String
+  pronunciation   String?
   role            String       @default("client")
   email           String?
   phone           String?
@@ -132,6 +135,7 @@ model ClientPerson {
   photoMimeType   String?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
+  phoneNumbers    ClientPhoneNumber[] @relation("ClientPersonPhoneNumbers")
 
   @@index([clientId])
 }
@@ -141,13 +145,34 @@ model ClientAdditionalContact {
   client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
   clientId  String
   name      String
+  pronunciation String?
   role      String
   phone     String?
   email     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  phoneNumbers ClientPhoneNumber[] @relation("AdditionalContactPhoneNumbers")
 
   @@index([clientId])
+}
+
+model ClientPhoneNumber {
+  id                  String                  @id @default(cuid())
+  number              String
+  type                String                  @default("mobile")
+  clientId            String?
+  personId            String?
+  additionalContactId String?
+  client              Client?                 @relation("ClientPhoneNumbers", fields: [clientId], references: [id], onDelete: Cascade)
+  person              ClientPerson?           @relation("ClientPersonPhoneNumbers", fields: [personId], references: [id], onDelete: Cascade)
+  additionalContact   ClientAdditionalContact? @relation("AdditionalContactPhoneNumbers", fields: [additionalContactId], references: [id], onDelete: Cascade)
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+
+  @@index([clientId])
+  @@index([personId])
+  @@index([additionalContactId])
+  @@index([number])
 }
 
 model Venue {
