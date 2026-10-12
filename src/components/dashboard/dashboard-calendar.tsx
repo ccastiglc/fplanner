@@ -117,7 +117,7 @@ export default function DashboardCalendar() {
                         className={`calendar-event-entry relative block min-w-0 rounded-md border-l-2 px-1.5 py-1 text-left text-[10px] font-medium leading-tight sm:text-xs ${event.status === "completed" ? "border-slate-400 bg-slate-100 text-slate-600" : event.status === "pending" ? "border-amber-400 bg-amber-50 text-amber-800" : "border-orange-500 bg-orange-50 text-orange-800"}`}
                       >
                         <span className="block truncate">{event.type} · {event.clients}</span>
-                        <span className="calendar-event-tooltip pointer-events-none absolute left-0 top-full z-40 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-4 text-left shadow-xl transition duration-150">
+                        <span className="calendar-event-tooltip pointer-events-auto absolute bottom-full left-0 z-40 mb-2 w-64 rounded-xl border border-slate-200 bg-white p-4 text-left shadow-xl transition duration-150">
                           <span className="flex items-center justify-between gap-2">
                             <span className="font-semibold text-slate-900">{event.type} | {event.clients}</span>
                             <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] capitalize text-slate-600">{event.status}</span>
