@@ -269,7 +269,7 @@ export default function ClientForm({
               <h2 id="persons-heading" className="text-base font-semibold text-slate-900">Additional persons</h2>
               <p className="mt-1 text-sm text-slate-500">People in this client group, such as both partners in a wedding.</p>
             </div>
-            <button type="button" onClick={() => setPersons((current) => [...current, { name: "", pronunciation: "", role: "client", email: "", photoUrl: "", phoneNumbers: [] }])} className="rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Add person</button>
+            <button type="button" disabled={persons.length >= 3} onClick={() => setPersons((current) => current.length < 3 ? [...current, { name: "", pronunciation: "", role: "client", email: "", photoUrl: "", phoneNumbers: [] }] : current)} className="rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">{persons.length >= 3 ? "Maximum 3 persons" : "Add person"}</button>
           </div>
           {persons.map((person, index) => {
             const personPhoto = person.photoStorageKey

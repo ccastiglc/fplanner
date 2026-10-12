@@ -49,9 +49,9 @@ const additionalContactInput = z.object({
   email: optionalEmail,
 });
 
-function parseArray<T extends z.ZodType>(value: FormDataEntryValue | null, schema: T) {
+function parseArray<T extends z.ZodType>(value: FormDataEntryValue | null, schema: T, max = 100) {
   try {
-    return z.array(schema).safeParse(JSON.parse(String(value ?? "[]")));
+    return z.array(schema).max(max).safeParse(JSON.parse(String(value ?? "[]")));
   } catch {
     return { success: false as const, error: "Invalid list data" };
   }
@@ -133,7 +133,7 @@ export async function saveClient(formData: FormData) {
   const clientId = String(formData.get("clientId") ?? "").trim();
   const result = clientInput.safeParse(Object.fromEntries(formData.entries()));
   const clientPhonesResult = parseArray(formData.get("clientPhonesJson"), phoneInput);
-  const personsResult = parseArray(formData.get("personsJson"), personInput);
+  const personsResult = parseArray(formData.get("personsJson"), personInput, 3);
   const contactsResult = parseArray(formData.get("contactsJson"), additionalContactInput);
   const errorPath = clientId ? `/dashboard/clients/${clientId}` : "/dashboard/clients/new";
 
