@@ -1,15 +1,23 @@
-"use client";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
-import { notFound } from "next/navigation";
-import { cn } from "@/lib/utils";
+export default async function ClientDashboard() {
+  const session = await auth();
 
-export default function ClientDashboard() {
+  if (!session?.user?.id) {
+    redirect("/");
+  }
+
+  if (session.user.role !== "CLIENT") {
+    redirect("/dashboard");
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+    <main className="flex min-h-screen items-center justify-center bg-slate-50">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-foreground">Welcome</h1>
-        <p className="mt-2 text-muted-foreground">Your event dashboard is ready</p>
+        <h1 className="text-2xl font-bold text-slate-900">Welcome</h1>
+        <p className="mt-2 text-slate-500">Your event dashboard is ready</p>
       </div>
-    </div>
+    </main>
   );
 }

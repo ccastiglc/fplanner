@@ -45,6 +45,7 @@
     "build": "next build",
     "start": "next start -p 3003",
     "lint": "next lint",
+    "seed:superuser": "node prisma/seed-superuser.mjs",
     "postinstall": "prisma skills sync || exit 0"
   }
 }
