@@ -91,14 +91,20 @@ model Client {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String
   name           String
+  role           String       @default("client")
   contactName    String
   email          String
   phone          String?
+  phoneType      String?      @default("mobile")
   address        String?
   city           String?
   state          String?
   postalCode     String?
   country        String?
+  notes          String?
+  photoUrl       String?
+  photoStorageKey String?     @unique
+  photoMimeType  String?
   companyType    String?      @default("individual")
   taxId          String?
   preferences    Json?

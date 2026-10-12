@@ -15,5 +15,9 @@ export default async function DashboardRouteLayout({
     redirect("/client");
   }
 
-  return <DashboardLayout>{children}</DashboardLayout>;
+  return (
+    <DashboardLayout canManageClients={session.user.role === "ADMIN"}>
+      {children}
+    </DashboardLayout>
+  );
 }

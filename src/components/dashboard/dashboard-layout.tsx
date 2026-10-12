@@ -22,7 +22,7 @@ import {
 const NAV_ITEMS = [
   { label: "Dashboard Home", href: "/dashboard", icon: LayoutDashboard, ready: true },
   { label: "Events", href: "/dashboard/events", icon: CalendarDays, ready: true },
-  { label: "Clients", href: "/dashboard/clients", icon: UsersRound, ready: false },
+  { label: "Clients", href: "/dashboard/clients", icon: UsersRound, ready: true },
   { label: "Venues", href: "/dashboard/venues", icon: Building2, ready: false },
   { label: "Staff", href: "/dashboard/staff", icon: BriefcaseBusiness, ready: false },
   { label: "Services", href: "/dashboard/services", icon: Wrench, ready: false },
@@ -32,7 +32,8 @@ const NAV_ITEMS = [
 
 export default function DashboardLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+  canManageClients,
+}: Readonly<{ children: React.ReactNode; canManageClients: boolean }>) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -57,6 +58,8 @@ export default function DashboardLayout({
       </Link>
       <nav aria-label="Dashboard navigation" className="flex-1 space-y-1">
         {NAV_ITEMS.map(({ label, href, icon: Icon, ready }) => {
+          if (label === "Clients" && !canManageClients) return null;
+
           const active = pathname.endsWith(href);
           const content = (
             <>

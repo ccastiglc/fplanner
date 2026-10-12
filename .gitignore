@@ -19,6 +19,7 @@
 
 # production
 /build
+/storage/client-photos/
 
 # misc
 .DS_Store
