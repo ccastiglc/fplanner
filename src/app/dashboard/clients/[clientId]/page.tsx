@@ -19,6 +19,7 @@ export default async function ClientProfilePage({
       id: clientId,
       ...(session.user.organizationId ? { organizationId: session.user.organizationId } : {}),
     },
+    include: { persons: true, additionalContacts: true },
   });
   if (!client) notFound();
 

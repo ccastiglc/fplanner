@@ -114,6 +114,40 @@ model Client {
 
   events   Event[]
   payments Payment[]
+  persons  ClientPerson[]
+  additionalContacts ClientAdditionalContact[]
+}
+
+model ClientPerson {
+  id              String       @id @default(cuid())
+  client          Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId        String
+  name            String
+  role            String       @default("client")
+  email           String?
+  phone           String?
+  phoneType       String?      @default("mobile")
+  photoUrl        String?
+  photoStorageKey String?      @unique
+  photoMimeType   String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([clientId])
+}
+
+model ClientAdditionalContact {
+  id        String   @id @default(cuid())
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId  String
+  name      String
+  role      String
+  phone     String?
+  email     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
 }
 
 model Venue {

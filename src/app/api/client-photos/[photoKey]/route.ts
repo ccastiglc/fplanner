@@ -11,26 +11,38 @@ export async function GET(
   if (session?.user.role !== "ADMIN") return new Response(null, { status: 404 });
 
   const { photoKey } = await params;
-  const client = await prisma.client.findFirst({
-    where: {
-      photoStorageKey: photoKey,
-      ...(session.user.organizationId ? { organizationId: session.user.organizationId } : {}),
-    },
-    select: { photoStorageKey: true, photoMimeType: true },
-  });
+  const organizationFilter = session.user.organizationId
+    ? { organizationId: session.user.organizationId }
+    : {};
+  const [clientPhoto, personPhoto] = await Promise.all([
+    prisma.client.findFirst({
+      where: { photoStorageKey: photoKey, ...organizationFilter },
+      select: { photoStorageKey: true, photoMimeType: true },
+    }),
+    prisma.clientPerson.findFirst({
+      where: {
+        photoStorageKey: photoKey,
+        ...(session.user.organizationId
+          ? { client: { is: { organizationId: session.user.organizationId } } }
+          : {}),
+      },
+      select: { photoStorageKey: true, photoMimeType: true },
+    }),
+  ]);
+  const photoRecord = clientPhoto ?? personPhoto;
 
-  if (!client?.photoStorageKey || !client.photoMimeType) {
+  if (!photoRecord?.photoStorageKey || !photoRecord.photoMimeType) {
     return new Response(null, { status: 404 });
   }
 
-  const filePath = getClientPhotoPath(client.photoStorageKey, client.photoMimeType);
+  const filePath = getClientPhotoPath(photoRecord.photoStorageKey, photoRecord.photoMimeType);
   if (!filePath) return new Response(null, { status: 404 });
 
   try {
     const photo = await readFile(filePath);
     return new Response(photo, {
       headers: {
-        "Content-Type": client.photoMimeType,
+        "Content-Type": photoRecord.photoMimeType,
         "Cache-Control": "private, no-store",
         "X-Content-Type-Options": "nosniff",
       },

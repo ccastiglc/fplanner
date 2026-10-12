@@ -46,6 +46,7 @@ export async function POST(
 
   const formData = await request.formData();
   const photo = formData.get("photo");
+  const personId = String(formData.get("personId") ?? "").trim();
   if (!(photo instanceof File) || photo.size === 0) {
     return Response.json({ error: "Select an image to upload" }, { status: 400 });
   }
@@ -59,6 +60,11 @@ export async function POST(
     return Response.json({ error: "Upload a JPEG, PNG, or WebP image" }, { status: 415 });
   }
 
+  const person = personId
+    ? await prisma.clientPerson.findFirst({ where: { id: personId, clientId: client.id } })
+    : null;
+  if (personId && !person) return Response.json({ error: "Person not found" }, { status: 404 });
+
   const storageKey = randomUUID();
   const filePath = getClientPhotoPath(storageKey, mimeType);
   if (!filePath) return Response.json({ error: "Invalid image type" }, { status: 415 });
@@ -67,17 +73,25 @@ export async function POST(
   await writeFile(filePath, buffer, { flag: "wx", mode: 0o600 });
 
   try {
-    await prisma.client.update({
-      where: { id: client.id },
-      data: { photoUrl: null, photoStorageKey: storageKey, photoMimeType: mimeType },
-    });
+    if (person) {
+      await prisma.clientPerson.update({
+        where: { id: person.id },
+        data: { photoUrl: null, photoStorageKey: storageKey, photoMimeType: mimeType },
+      });
+    } else {
+      await prisma.client.update({
+        where: { id: client.id },
+        data: { photoUrl: null, photoStorageKey: storageKey, photoMimeType: mimeType },
+      });
+    }
   } catch (error) {
     await removeClientPhoto(storageKey, mimeType);
     throw error;
   }
 
-  if (client.photoStorageKey && client.photoMimeType) {
-    await removeClientPhoto(client.photoStorageKey, client.photoMimeType);
+  const previousPhoto = person ?? client;
+  if (previousPhoto.photoStorageKey && previousPhoto.photoMimeType) {
+    await removeClientPhoto(previousPhoto.photoStorageKey, previousPhoto.photoMimeType);
   }
 
   revalidatePath("/dashboard/clients");
