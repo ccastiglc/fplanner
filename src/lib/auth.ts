@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 
@@ -8,7 +9,7 @@ export async function signIn(email: string, password: string) {
       include: { organization: true },
     });
 
-    if (!user || user.password !== password) {
+    if (!user?.passwordHash || !(await bcrypt.compare(password, user.passwordHash))) {
       return { success: false, error: "Invalid credentials" };
     }
 
@@ -50,7 +51,7 @@ export async function signUp(
       data: {
         name,
         email,
-        password,
+        passwordHash: await bcrypt.hash(password, 12),
         role,
         status: "ACTIVE",
       },
