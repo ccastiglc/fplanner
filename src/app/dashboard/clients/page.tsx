@@ -10,6 +10,12 @@ export default async function ClientsPage() {
 
   const clients = await prisma.client.findMany({
     where: session.user.organizationId ? { organizationId: session.user.organizationId } : {},
+    include: {
+      persons: {
+        select: { id: true, name: true, role: true, photoUrl: true, photoStorageKey: true },
+        orderBy: { createdAt: "asc" },
+      },
+    },
     orderBy: { name: "asc" },
   });
 
@@ -54,6 +60,27 @@ export default async function ClientsPage() {
                     </span>
                     <span className="mt-1 block truncate text-sm text-slate-500">{client.email}</span>
                   </span>
+                  {client.persons.length > 0 && (
+                    <span aria-label="Additional persons" className="flex min-w-0 flex-wrap items-center gap-2 sm:max-w-[420px]">
+                      {client.persons.slice(0, 3).map((person) => {
+                        const personPhoto = person.photoStorageKey
+                          ? `/plan/api/client-photos/${person.photoStorageKey}`
+                          : person.photoUrl;
+
+                        return (
+                          <span key={person.id} className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-2.5">
+                            {personPhoto ? (
+                              <img src={personPhoto} alt={`${person.name} profile`} width={28} height={28} className="size-7 shrink-0 rounded-full object-cover" />
+                            ) : (
+                              <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-full bg-orange-50 text-xs font-semibold text-orange-700">{person.name.slice(0, 1).toUpperCase()}</span>
+                            )}
+                            <span className="max-w-36 truncate text-xs font-medium text-slate-700">{person.name}</span>
+                            <span className="shrink-0 text-[10px] capitalize text-slate-400">{person.role}</span>
+                          </span>
+                        );
+                      })}
+                    </span>
+                  )}
                   <span className="text-sm text-slate-500">{client.phone ? `${client.phone} · ${client.phoneType || "phone"}` : "No phone"}</span>
                   <span className="text-sm text-slate-500">{[client.city, client.state].filter(Boolean).join(", ") || "No mailing address"}</span>
                 </Link>
