@@ -22,7 +22,7 @@ export default async function LoginPage({
       await signIn("credentials", {
         username: formData.get("username"),
         password: formData.get("password"),
-        redirectTo: "/dashboard",
+        redirectTo: "/plan/dashboard",
       });
     } catch (error) {
       if (error instanceof AuthError) {

@@ -63,7 +63,7 @@ async function recordFailedLogin(keys: string[], now: Date) {
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
-  pages: { signIn: "/" },
+  pages: { signIn: "/plan" },
   session: { strategy: "jwt", maxAge: 8 * 60 * 60 },
   providers: [
     Credentials({
