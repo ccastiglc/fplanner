@@ -12,7 +12,7 @@ export default async function ClientsPage() {
     where: session.user.organizationId ? { organizationId: session.user.organizationId } : {},
     include: {
       persons: {
-        select: { id: true, name: true, role: true, photoUrl: true, photoStorageKey: true },
+        select: { id: true, name: true, role: true, email: true, photoUrl: true, photoStorageKey: true },
         orderBy: { createdAt: "asc" },
       },
     },
@@ -54,7 +54,7 @@ export default async function ClientsPage() {
                     <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-xl bg-orange-50 font-semibold text-orange-700">{client.name.slice(0, 1).toUpperCase()}</span>
                   )}
                   <span className="min-w-0 flex-1">
-                    <span className="flex flex-wrap items-center gap-2">
+                    <span className="flex flex-wrap items-center gap-3">
                       <span className="font-semibold text-slate-900">{client.name}</span>
                       <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs capitalize text-slate-600">{client.role}</span>
                       {client.persons.slice(0, 3).map((person) => {
@@ -63,14 +63,19 @@ export default async function ClientsPage() {
                           : person.photoUrl;
 
                         return (
-                          <span key={person.id} className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-2.5">
+                          <span key={person.id} className="inline-flex min-w-0 max-w-[260px] items-center gap-3 rounded-xl border border-slate-200 bg-white p-2">
                             {personPhoto ? (
-                              <img src={personPhoto} alt={`${person.name} profile`} width={28} height={28} className="size-7 shrink-0 rounded-full object-cover" />
+                              <img src={personPhoto} alt={`${person.name} profile`} width={48} height={48} className="size-12 shrink-0 rounded-xl border border-slate-200 object-cover" />
                             ) : (
-                              <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-full bg-orange-50 text-xs font-semibold text-orange-700">{person.name.slice(0, 1).toUpperCase()}</span>
+                              <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-xl bg-orange-50 text-sm font-semibold text-orange-700">{person.name.slice(0, 1).toUpperCase()}</span>
                             )}
-                            <span className="max-w-36 truncate text-xs font-medium text-slate-700">{person.name}</span>
-                            <span className="shrink-0 text-[10px] capitalize text-slate-400">{person.role}</span>
+                            <span className="min-w-0">
+                              <span className="flex min-w-0 items-center gap-2">
+                                <span className="truncate text-sm font-semibold text-slate-900">{person.name}</span>
+                                <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] capitalize text-slate-500">{person.role}</span>
+                              </span>
+                              <span className="mt-1 block truncate text-xs text-slate-500">{person.email || "No email"}</span>
+                            </span>
                           </span>
                         );
                       })}
