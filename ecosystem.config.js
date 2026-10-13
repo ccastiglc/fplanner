@@ -9,5 +9,14 @@ module.exports = {
       autorestart: true,
       env: { NODE_ENV: "production" },
     },
+    {
+      name: "fredo-planner-event-status",
+      script: "scripts/event-status-worker.mjs",
+      cwd: "/home/ideatr6/apps/planner",
+      instances: 1,
+      autorestart: true,
+      restart_delay: 10000,
+      env: { NODE_ENV: "production" },
+    },
   ],
 };

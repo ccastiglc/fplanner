@@ -7,6 +7,9 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getSettingsOrganizationId } from "@/lib/settings-organization";
 import { removeVenueFile } from "@/lib/venue-file-storage";
+import { venueTimezone } from "@/lib/venue-timezone";
+import { validTimezone } from "@/lib/event-time";
+import { eventReturnQuery } from "@/lib/event-return-query";
 
 const text = z.string().trim().max(10000);
 const venueInput = z.object({
@@ -18,6 +21,7 @@ const venueInput = z.object({
   state: z.string().trim().max(120),
   postalCode: z.string().trim().max(32),
   country: z.string().trim().max(120),
+  timezone: z.string().trim().refine((value) => !value || validTimezone(value)),
   telephone: z.string().trim().max(80),
   faxPhone: z.string().trim().max(80),
   cellPhone: z.string().trim().max(80),
@@ -95,6 +99,7 @@ export async function saveVenue(formData: FormData) {
     state: optional(input.state),
     postalCode: optional(input.postalCode),
     country: optional(input.country),
+    timezone: input.timezone || await venueTimezone(input.postalCode, input.country),
     telephone: optional(input.telephone),
     faxPhone: optional(input.faxPhone),
     cellPhone: optional(input.cellPhone),
@@ -142,7 +147,8 @@ export async function saveVenue(formData: FormData) {
 
   revalidatePath("/dashboard/venues");
   revalidatePath(`/dashboard/venues/${venueId}`);
-  redirect(`/dashboard/venues/${venueId}?saved=1`);
+  revalidatePath("/dashboard", "layout");
+  redirect(`/dashboard/venues/${venueId}?saved=1${eventReturnQuery(formData.get("eventContextId"))}`);
 }
 
 export async function deleteVenue(formData: FormData) {

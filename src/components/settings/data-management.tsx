@@ -9,6 +9,7 @@ const ENTITIES = [
   { value: "staff", label: "Staff" },
   { value: "services", label: "Services" },
   { value: "payments", label: "Payments" },
+  { value: "events", label: "Events" },
 ] as const;
 
 export default function DataManagement({
@@ -72,7 +73,7 @@ export default function DataManagement({
       <div>
         <p className="text-sm font-medium text-orange-600">Import and export</p>
         <h2 id="data-management-title" className="mt-1 text-xl font-semibold text-slate-900">Data Management</h2>
-        <p className="mt-1 text-sm text-slate-500">Import and export clients, venues, staff, services, and payments using CSV or Excel workbooks.</p>
+        <p className="mt-1 text-sm text-slate-500">Import and export events, clients, venues, staff, services, and payments using CSV or Excel workbooks.</p>
       </div>
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
         <p className="text-sm font-semibold text-slate-800">Officially supported platforms</p>
@@ -81,7 +82,7 @@ export default function DataManagement({
           <span className="text-xs text-slate-500">More coming soon…</span>
         </div>
         <p className="mt-2 text-xs leading-relaxed text-slate-500">Other CSV/XLSX files are imported best-effort using recognized column headings; complete field support is not guaranteed.</p>
-        <p className="mt-1 text-xs leading-relaxed text-slate-500">DJ Event Planner client and venue CSV exports are mapped, including the five venue contact records.</p>
+        <p className="mt-1 text-xs leading-relaxed text-slate-500">DJEP event imports link organization-owned profiles and retain financial and XML planning information. Import client, venue, staff, and package directories first for accurate matching. Times use America/New_York.</p>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
@@ -104,7 +105,7 @@ export default function DataManagement({
             CSV or Excel file (.csv, .xlsx)
             <input type="file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onChange={(event) => setFile(event.target.files?.[0] ?? null)} className="mt-1.5 block w-full rounded-xl border border-slate-300 bg-white p-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-medium" />
           </label>
-          <p className="text-xs leading-relaxed text-slate-500">Imports append records. Review the file first to avoid duplicates. Raw row contents are not retained in import history.</p>
+          <p className="text-xs leading-relaxed text-slate-500">Event imports skip previously imported event IDs and reject ambiguous profile matches. Other imports append records. Raw rows, guest passwords, and XML access logs are not retained.</p>
           <button type="submit" disabled={busy || !file} className="rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-semibold text-brand-accent-foreground hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50">{busy ? "Importing…" : "Import file"}</button>
           {message && <p role="status" className="text-sm text-slate-600">{message}</p>}
         </form>

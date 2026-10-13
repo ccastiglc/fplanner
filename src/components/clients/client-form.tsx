@@ -88,9 +88,11 @@ function PhoneNumbersEditor({
 export default function ClientForm({
   client,
   error,
+  eventId,
 }: {
   client?: ClientProfile;
   error?: string;
+  eventId?: string;
 }) {
   const [photoUrl, setPhotoUrl] = useState(client?.photoUrl ?? "");
   const [postalCode, setPostalCode] = useState(client?.postalCode ?? "");
@@ -205,6 +207,7 @@ export default function ClientForm({
         </div>
       )}
       <form action={saveClient} className="space-y-7 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        <input type="hidden" name="eventContextId" value={eventId ?? ""} />
         {client && <input type="hidden" name="clientId" value={client.id} />}
         <input type="hidden" name="clientPhonesJson" value={JSON.stringify(clientPhones)} />
         <input type="hidden" name="personsJson" value={JSON.stringify(persons)} />

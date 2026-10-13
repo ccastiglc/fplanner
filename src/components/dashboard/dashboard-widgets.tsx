@@ -1,14 +1,8 @@
 import Link from "next/link";
 import { ArrowUpRight, CalendarCheck2, Clock3, Sparkles } from "lucide-react";
-import { DEMO_EVENTS, DEMO_TASKS } from "@/components/dashboard/dashboard-data";
+import { DEMO_TASKS } from "@/components/dashboard/dashboard-data";
 
-const STATUS_LABELS = [
-  { status: "pending", label: "Pending", color: "bg-amber-400" },
-  { status: "booked", label: "Booked", color: "bg-orange-500" },
-  { status: "completed", label: "Completed", color: "bg-slate-400" },
-] as const;
-
-export function EventCountsWidget() {
+export function EventCountsWidget({ counts }: { counts: [string, number][] }) {
   return (
     <section aria-labelledby="event-counts-title" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between">
@@ -19,14 +13,14 @@ export function EventCountsWidget() {
         <CalendarCheck2 className="size-5 text-orange-500" />
       </div>
       <div className="mt-4 space-y-3">
-        {STATUS_LABELS.map(({ status, label, color }) => (
+        {counts.map(([status, count]) => (
           <div key={status} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5">
-            <span className="flex items-center gap-2 text-sm text-slate-600"><span className={`size-2 rounded-full ${color}`} />{label}</span>
-            <span className="text-sm font-semibold tabular-nums text-slate-900">{DEMO_EVENTS.filter((event) => event.status === status).length}</span>
+            <span className="text-sm text-slate-600">{status}</span>
+            <span className="text-sm font-semibold tabular-nums text-slate-900">{count}</span>
           </div>
         ))}
       </div>
-      <p className="mt-3 text-[11px] text-slate-400">Sample counts · connected event data comes later</p>
+      {!counts.length && <p className="mt-3 text-sm text-slate-500">No events yet.</p>}
     </section>
   );
 }

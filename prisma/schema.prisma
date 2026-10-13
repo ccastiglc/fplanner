@@ -94,6 +94,7 @@ model Client {
   id              String       @id @default(cuid())
   organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId  String
+  djepId          String?
   name            String
   pronunciation   String?
   role            String       @default("client")
@@ -183,6 +184,8 @@ model Venue {
   id                  String       @id @default(cuid())
   organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId      String
+  djepId              String?
+  timezone            String?
   name                String
   address             String?
   address2            String?
@@ -216,9 +219,10 @@ model Venue {
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
-  events   Event[]
-  contacts VenueContact[]
-  files    VenueFile[]
+  events       Event[]        @relation("PrimaryVenue")
+  secondEvents Event[]        @relation("SecondVenue")
+  contacts     VenueContact[]
+  files        VenueFile[]
 }
 
 model VenueContact {
@@ -260,11 +264,23 @@ model Event {
   description       String?
   status            String       @default("planned") /* planned, confirmed, completed, cancelled */
   type              String       @default("event") /* event, wedding, corporate, etc. */
-  startDateTime     DateTime
-  endDateTime       DateTime
+  eventDate         DateTime     @db.Date
+  startTime         String?
+  endTime           String?
+  setupTime         String?
+  endNextDay        Boolean      @default(false)
+  startDateTime     DateTime?
+  endDateTime       DateTime?
+  sourceId          String?
+  guestCount        String?
+  details           Json?        @default("{}")
+  planning          Json?        @default("{}")
+  importIssues      Json?        @default("[]")
   timezone          String       @default("UTC")
-  venue             Venue?       @relation(fields: [venueId], references: [id], onDelete: SetNull)
+  venue             Venue?       @relation("PrimaryVenue", fields: [venueId], references: [id], onDelete: SetNull)
   venueId           String?
+  secondVenue       Venue?       @relation("SecondVenue", fields: [secondVenueId], references: [id], onDelete: SetNull)
+  secondVenueId     String?
   address           String?
   expectedAttendees Int?
   budget            Decimal?     @default(0)
@@ -287,12 +303,16 @@ model Event {
   reminderDate      DateTime?
   eventServices     EventService[]
   aiSessions        AiSession[]
+
+  @@unique([organizationId, sourceId])
+  @@index([organizationId, eventDate])
 }
 
 model Staff {
   id              String       @id @default(cuid())
   organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId  String
+  djepId          String?
   user            User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId          String?
   name            String
@@ -316,6 +336,7 @@ model StaffAssignment {
   staff      Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
   staffId    String
   role       String   @default("dj")
+  fee        Decimal? @default(0)
   assignedAt DateTime @default(now())
   status     String   @default("confirmed")
 }
@@ -355,6 +376,7 @@ model Service {
   id             String       @id @default(cuid())
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String
+  djepId         String?
   name           String
   description    String?
   category       String       @default("standard") /* standard, premium, platinum */
@@ -374,6 +396,7 @@ model EventService {
   service         Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   serviceId       String
   quantity        Int      @default(1)
+  bookedFee       Decimal? @default(0)
   specialRequests String?
   createdAt       DateTime @default(now())
 }

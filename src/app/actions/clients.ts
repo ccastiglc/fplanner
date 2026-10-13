@@ -7,6 +7,7 @@ import type { ClientPhoneNumber, Prisma } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { removeClientPhoto } from "@/lib/client-photo-storage";
+import { eventReturnQuery } from "@/lib/event-return-query";
 
 const optionalText = z.string().trim().max(2000).optional();
 const optionalEmail = z.string().trim().max(254).email().or(z.literal(""));
@@ -317,7 +318,8 @@ export async function saveClient(formData: FormData) {
 
   revalidatePath("/dashboard/clients");
   revalidatePath(`/dashboard/clients/${clientId}`);
-  redirect(`/dashboard/clients/${clientId}?saved=1`);
+  revalidatePath("/dashboard", "layout");
+  redirect(`/dashboard/clients/${clientId}?saved=1${eventReturnQuery(formData.get("eventContextId"))}`);
 }
 
 export async function deleteClient(formData: FormData) {

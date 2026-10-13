@@ -31,7 +31,7 @@ function Field({
   );
 }
 
-export default function VenueForm({ venue, error }: { venue?: VenueProfile; error?: string }) {
+export default function VenueForm({ venue, error, eventId }: { venue?: VenueProfile; error?: string; eventId?: string }) {
   const contacts = Array.from({ length: 5 }, (_, index) => venue?.contacts.find((contact) => contact.sortOrder === index));
 
   return (
@@ -43,6 +43,7 @@ export default function VenueForm({ venue, error }: { venue?: VenueProfile; erro
       {error && <p role="alert" className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error === "url" ? "Website and image URLs must use HTTP or HTTPS." : "Check the venue fields and try again."}</p>}
       {venue && <div className="mb-4 flex justify-end"><ConfirmDeleteButton action={deleteVenue} fieldName="venueId" recordId={venue.id} entityLabel="venue" itemName={venue.name} consequences="This permanently deletes the venue profile and its contacts. Events remain, but their venue association is removed." /></div>}
       <form action={saveVenue} className="space-y-7 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        <input type="hidden" name="eventContextId" value={eventId ?? ""} />
         <input type="hidden" name="venueId" value={venue?.id ?? ""} />
 
         <section aria-labelledby="venue-details-heading" className="grid gap-5 sm:grid-cols-2">
@@ -57,6 +58,7 @@ export default function VenueForm({ venue, error }: { venue?: VenueProfile; erro
         <section aria-labelledby="venue-address-heading" className="grid gap-5 border-t border-slate-100 pt-6 sm:grid-cols-2">
           <h2 id="venue-address-heading" className="text-base font-semibold text-slate-900 sm:col-span-2">Address and contact</h2>
           <VenueAddressFields venue={venue ? { address: venue.address, address2: venue.address2, city: venue.city, state: venue.state, postalCode: venue.postalCode, country: venue.country } : undefined} />
+          <Field name="timezone" label="Local time zone (auto-detected from U.S. ZIP when blank)" value={venue?.timezone} maxLength={120} />
           <Field name="telephone" label="Telephone" value={venue?.telephone} maxLength={80} />
           <Field name="faxPhone" label="Fax" value={venue?.faxPhone} maxLength={80} />
           <Field name="cellPhone" label="Cell phone" value={venue?.cellPhone} maxLength={80} />

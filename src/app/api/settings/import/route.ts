@@ -3,9 +3,11 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getSettingsOrganizationId } from "@/lib/settings-organization";
 import { ImportRowError, mapImportRow, type ImportEntity } from "@/lib/data-import";
-import { parseSpreadsheet } from "@/lib/spreadsheet";
+import { parseSpreadsheet, importValue } from "@/lib/spreadsheet";
+import { importEvent } from "@/lib/event-import";
+import { completePastBookedEvents } from "@/lib/event-status.mjs";
 
-const entities = new Set<ImportEntity>(["clients", "venues", "staff", "services", "payments"]);
+const entities = new Set<string>(["clients", "venues", "staff", "services", "payments", "events"]);
 const maxFileBytes = 10 * 1024 * 1024;
 const maxRows = 10000;
 
@@ -50,6 +52,7 @@ export async function POST(request: Request) {
   }
 
   if (!rows.length) return Response.json({ error: "The first sheet contains no data rows." }, { status: 400 });
+  if (String(entity) === "events") rows = rows.filter((row) => !/^Number of Results:/i.test(Object.values(row)[0] ?? ""));
   if (rows.length > maxRows) return Response.json({ error: `The file exceeds the ${maxRows} row import limit.` }, { status: 413 });
 
   const organizationId = await getSettingsOrganizationId(session.user.organizationId);
@@ -71,13 +74,18 @@ export async function POST(request: Request) {
 
   for (const [index, row] of rows.entries()) {
     try {
-      const record = mapImportRow(entity, row, source === "djep" ? "djep" : "csv", organizationId);
       await prisma.$transaction(async (transaction) => {
-        await createRecord(transaction, record);
+        if (String(entity) === "events") {
+          await importEvent(transaction, row, organizationId, session.user.id);
+        } else {
+          const record = mapImportRow(entity, row, source === "djep" ? "djep" : "csv", organizationId);
+          if (record.model === "venues" && source === "djep" && importValue(row, "Venue ID") === "0") throw new ImportRowError("Venue ID 0 is not a venue profile.");
+          await createRecord(transaction, record);
+        }
         await transaction.importRow.create({
           data: { importBatchId: batch.id, mappedTo: entity, status: "success" },
         });
-      });
+      }, { timeout: 20000 });
       imported += 1;
     } catch (error) {
       errorCount += 1;
@@ -99,5 +107,6 @@ export async function POST(request: Request) {
     },
   });
 
+  if (String(entity) === "events") await completePastBookedEvents(prisma);
   return Response.json({ batchId: batch.id, total: rows.length, imported, errorCount, errors });
 }

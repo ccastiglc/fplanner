@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { csvSafe } from "@/lib/spreadsheet";
 
-const entities = ["clients", "venues", "staff", "services", "payments"] as const;
+const entities = ["clients", "venues", "staff", "services", "payments", "events"] as const;
 type ExportEntity = (typeof entities)[number];
 
 function phonesText(phones: Array<{ number: string; type: string }>) {
@@ -19,6 +19,13 @@ function spreadsheetSafe(value: unknown): CellValue {
 
 async function getExportRows(entity: ExportEntity, organizationId: string | null) {
   const where = organizationId ? { organizationId } : {};
+  if (entity === "events") {
+    const events = await prisma.event.findMany({ where, include: { client: true, venue: true, staffAssignments: { include: { staff: true } }, eventServices: { include: { service: true } } }, orderBy: { eventDate: "asc" } });
+    return {
+      headers: ["Event ID", "Event Name", "Event Type", "Event Date", "Time Zone", "Start Time", "End Time", "Setup Time", "Next Day End", "Status", "Client Name", "Venue Name", "Guest Count", "Comments", "Financials and Workflow", "Staff Assignments", "Booked Services", "Planning Information", "Import Review Notes"],
+      rows: events.map((event) => [event.sourceId ?? event.id, event.name, event.type, event.eventDate.toISOString().slice(0, 10), event.timezone, event.startTime, event.endTime, event.setupTime, event.endNextDay, event.status, event.client?.name, event.venue?.name, event.guestCount, event.notes, JSON.stringify(event.details), JSON.stringify(event.staffAssignments.map((row) => ({ name: row.staff.name, role: row.role, fee: row.fee?.toString() }))), JSON.stringify(event.eventServices.map((row) => ({ name: row.service.name, quantity: row.quantity, fee: row.bookedFee?.toString() }))), JSON.stringify(event.planning), JSON.stringify(event.importIssues)]),
+    };
+  }
 
   if (entity === "clients") {
     const clients = await prisma.client.findMany({

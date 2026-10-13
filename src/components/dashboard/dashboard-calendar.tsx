@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
-import { DEMO_EVENTS, SERVICE_ICONS } from "@/components/dashboard/dashboard-data";
+import { serviceIcon } from "@/components/dashboard/dashboard-data";
 
 function dateKey(date: Date) {
   const year = date.getFullYear();
@@ -16,7 +16,7 @@ function monthLabel(date: Date) {
   return new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(date);
 }
 
-export default function DashboardCalendar() {
+export default function DashboardCalendar({ events }: { events: { id: string; date: string; type: string; clients: string; venue: string; status: string; services: string[] }[] }) {
   const now = new Date();
   const [month, setMonth] = useState(() => new Date(now.getFullYear(), now.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState(dateKey(now));
@@ -32,11 +32,11 @@ export default function DashboardCalendar() {
   }, [month]);
 
   const eventsByDate = useMemo(
-    () => DEMO_EVENTS.reduce<Record<string, typeof DEMO_EVENTS[number][]>>((groups, event) => {
+    () => events.reduce<Record<string, typeof events>>((groups, event) => {
       groups[event.date] = [...(groups[event.date] || []), event];
       return groups;
     }, {}),
-    []
+    [events]
   );
 
   function changeMonth(offset: number) {
@@ -65,7 +65,6 @@ export default function DashboardCalendar() {
           <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
             <CalendarDays className="size-4 text-orange-500" />
             <span>Schedule</span>
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-500">Demo data</span>
           </div>
           <h1 id="calendar-title" className="mt-1 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">{monthLabel(month)}</h1>
         </div>
@@ -127,7 +126,7 @@ export default function DashboardCalendar() {
                           <span className="mt-3 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Booked services</span>
                           <span className="mt-1.5 flex flex-wrap gap-1.5">
                             {event.services.map((service) => {
-                              const ServiceIcon = SERVICE_ICONS[service];
+                              const ServiceIcon = serviceIcon(service);
                               return <span key={service} title={service} className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-[10px] text-slate-700"><ServiceIcon className="size-3.5" />{service}</span>;
                             })}
                           </span>

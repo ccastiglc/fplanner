@@ -158,6 +158,7 @@ export function mapImportRow(entity: ImportEntity, row: ImportedRow, source: "dj
       data: {
         organization: { connect: { id: organizationId } },
         name: clientName,
+        djepId: source === "djep" ? importValue(row, "Client ID") || null : null,
         contactName: importValue(row, "Organization / Company", "Company") || clientName,
         email: allEmails[0] ?? null,
         role: "client",
@@ -184,6 +185,7 @@ export function mapImportRow(entity: ImportEntity, row: ImportedRow, source: "dj
       data: {
         organization: { connect: { id: organizationId } },
         name,
+        djepId: source === "djep" ? importValue(row, "Venue ID") || null : null,
         address: importValue(row, "Address", "Street Address", "Address 1") || null,
         address2: importValue(row, "Address 2", "Address Line 2") || null,
         city: importValue(row, "City") || null,
@@ -225,6 +227,7 @@ export function mapImportRow(entity: ImportEntity, row: ImportedRow, source: "dj
       data: {
         organization: { connect: { id: organizationId } },
         name,
+        djepId: source === "djep" ? importValue(row, "Employee ID", "Staff ID") || null : null,
         email: emails(importValue(row, "Email", "Email Address"))[0] ?? null,
         phone: phones[0]?.number ?? null,
         specialty: importValue(row, "Specialty", "Role") || "dj",
@@ -244,6 +247,7 @@ export function mapImportRow(entity: ImportEntity, row: ImportedRow, source: "dj
       data: {
         organization: { connect: { id: organizationId } },
         name,
+        djepId: source === "djep" ? importValue(row, "Package ID", "Service ID") || null : null,
         description: importValue(row, "Description") || null,
         category: importValue(row, "Category") || "standard",
         price,
