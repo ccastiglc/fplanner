@@ -27,7 +27,7 @@ export default async function ClientsPage() {
           <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Clients</h1>
           <p className="mt-1 text-sm text-slate-500">Client details used by event profiles.</p>
         </div>
-        <Link href="/dashboard/clients/new" className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600">
+        <Link href="/dashboard/clients/new" className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-semibold text-brand-accent-foreground transition hover:bg-orange-600">
           <Plus className="size-4" />Add client
         </Link>
       </div>

@@ -62,5 +62,6 @@ export async function saveBusinessProfile(formData: FormData) {
   ]);
 
   revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard", "layout");
   redirect("/dashboard/settings?saved=business#business-profile");
 }

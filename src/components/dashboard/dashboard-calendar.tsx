@@ -105,7 +105,7 @@ export default function DashboardCalendar() {
               return (
                 <div key={key} className={`relative min-h-[104px] border-b border-r border-slate-100 p-1.5 sm:min-h-[118px] sm:p-2 ${inMonth ? "bg-white" : "bg-slate-50/70"} ${isSelected ? "ring-1 ring-inset ring-orange-300" : ""}`}>
                   <div className="mb-1 flex justify-end">
-                    <span className={`grid size-6 place-items-center rounded-full text-xs ${isToday ? "bg-orange-500 font-semibold text-white" : inMonth ? "text-slate-600" : "text-slate-300"}`}>
+                    <span className={`grid size-6 place-items-center rounded-full text-xs ${isToday ? "bg-orange-500 font-semibold text-brand-accent-foreground" : inMonth ? "text-slate-600" : "text-slate-300"}`}>
                       {date.getDate()}
                     </span>
                   </div>

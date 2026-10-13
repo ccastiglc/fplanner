@@ -10,6 +10,17 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-success: var(--success);
   --color-error: var(--error);
+  --color-orange-50: var(--brand-accent-50);
+  --color-orange-100: var(--brand-accent-100);
+  --color-orange-200: var(--brand-accent-200);
+  --color-orange-300: var(--brand-accent-300);
+  --color-orange-400: var(--brand-accent-400);
+  --color-orange-500: var(--brand-accent);
+  --color-orange-600: var(--brand-accent-600);
+  --color-orange-700: var(--brand-accent-700);
+  --color-orange-800: var(--brand-accent-800);
+  --color-orange-900: var(--brand-accent-900);
+  --color-brand-accent-foreground: var(--brand-accent-foreground);
 }
 
 :root {
@@ -23,6 +34,17 @@
   --muted-foreground: #64748b;
   --success: #15803d;
   --error: #b91c1c;
+  --brand-accent: #f97316;
+  --brand-accent-50: #fff7ed;
+  --brand-accent-100: #ffedd5;
+  --brand-accent-200: #fed7aa;
+  --brand-accent-300: #fdba74;
+  --brand-accent-400: #fb923c;
+  --brand-accent-600: #ea580c;
+  --brand-accent-700: #c2410c;
+  --brand-accent-800: #9a3412;
+  --brand-accent-900: #7c2d12;
+  --brand-accent-foreground: #172033;
 }
 
 .dark {

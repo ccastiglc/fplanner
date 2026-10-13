@@ -369,7 +369,7 @@ export default function ClientForm({
 
         <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-5">
           <Link href="/dashboard/clients" className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">Cancel</Link>
-          <button type="submit" className="rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-600">Save client</button>
+          <button type="submit" className="rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-semibold text-brand-accent-foreground hover:bg-orange-600">Save client</button>
         </div>
       </form>
     </div>

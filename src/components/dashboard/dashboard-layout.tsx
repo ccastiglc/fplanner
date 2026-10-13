@@ -33,7 +33,9 @@ const NAV_ITEMS = [
 export default function DashboardLayout({
   children,
   canManageClients,
-}: Readonly<{ children: React.ReactNode; canManageClients: boolean }>) {
+  businessName,
+  logoUrl,
+}: Readonly<{ children: React.ReactNode; canManageClients: boolean; businessName: string; logoUrl: string | null }>) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -46,12 +48,14 @@ export default function DashboardLayout({
         className={`mb-7 flex h-12 items-center gap-3 px-3 ${collapsed ? "justify-center" : ""}`}
         onClick={() => setMobileOpen(false)}
       >
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-orange-500 text-sm font-bold text-white">
-          FP
-        </span>
+        {logoUrl ? (
+          <img src={logoUrl} alt={`${businessName} logo`} width={40} height={40} className="size-10 shrink-0 rounded-xl border border-slate-200 object-contain" />
+        ) : (
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-orange-500 text-sm font-bold text-brand-accent-foreground">FP</span>
+        )}
         {!collapsed && (
           <span className="min-w-0">
-            <span className="block truncate text-sm font-semibold text-slate-900">Fredo Productions</span>
+            <span className="block truncate text-sm font-semibold text-slate-900">{businessName}</span>
             <span className="block text-xs text-slate-500">Event Planner</span>
           </span>
         )}
@@ -155,7 +159,7 @@ export default function DashboardLayout({
             >
               <Menu className="size-5" />
             </button>
-            <span className="hidden text-sm font-medium text-slate-500 sm:inline">Fredo Productions</span>
+            <span className="hidden text-sm font-medium text-slate-500 sm:inline">{businessName}</span>
             <span aria-hidden="true" className="hidden text-slate-300 sm:inline">/</span>
             <span className="text-sm font-semibold text-slate-900">Event Planner</span>
           </div>
