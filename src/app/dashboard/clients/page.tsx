@@ -57,11 +57,6 @@ export default async function ClientsPage() {
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold text-slate-900">{client.name}</span>
                       <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs capitalize text-slate-600">{client.role}</span>
-                    </span>
-                    <span className="mt-1 block truncate text-sm text-slate-500">{client.email}</span>
-                  </span>
-                  {client.persons.length > 0 && (
-                    <span aria-label="Additional persons" className="flex min-w-0 flex-wrap items-center gap-2 sm:max-w-[420px]">
                       {client.persons.slice(0, 3).map((person) => {
                         const personPhoto = person.photoStorageKey
                           ? `/plan/api/client-photos/${person.photoStorageKey}`
@@ -80,7 +75,8 @@ export default async function ClientsPage() {
                         );
                       })}
                     </span>
-                  )}
+                    <span className="mt-1 block truncate text-sm text-slate-500">{client.email}</span>
+                  </span>
                   <span className="text-sm text-slate-500">{client.phone ? `${client.phone} · ${client.phoneType || "phone"}` : "No phone"}</span>
                   <span className="text-sm text-slate-500">{[client.city, client.state].filter(Boolean).join(", ") || "No mailing address"}</span>
                 </Link>
