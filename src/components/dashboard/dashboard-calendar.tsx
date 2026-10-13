@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import { serviceIcon } from "@/components/dashboard/dashboard-data";
+import { EVENT_STATUS_COLORS, eventStatusColor } from "@/lib/event-status-colors";
 
 function dateKey(date: Date) {
   const year = date.getFullYear();
@@ -114,13 +115,13 @@ export default function DashboardCalendar({ events }: { events: { id: string; da
                         key={event.id}
                         href={`/dashboard/events/${event.id}`}
                         aria-label={`${event.type}: ${event.clients}, ${event.venue}, status ${event.status}. Open event profile.`}
-                        className={`calendar-event-entry relative block min-w-0 rounded-md border-l-2 px-1.5 py-1 text-left text-[10px] font-medium leading-tight sm:text-xs ${event.status === "completed" ? "border-slate-400 bg-slate-100 text-slate-600" : event.status === "pending" ? "border-amber-400 bg-amber-50 text-amber-800" : "border-orange-500 bg-orange-50 text-orange-800"}`}
+                         className={`calendar-event-entry relative block min-w-0 rounded-md border-l-2 px-1.5 py-1 text-left text-[10px] font-medium leading-tight sm:text-xs ${eventStatusColor(event.status).chip}`}
                       >
                         <span className="block truncate">{event.type} · {event.clients}</span>
                         <span className={`calendar-event-tooltip pointer-events-auto absolute bottom-full ${tooltipAlignment} z-40 mb-2 w-64 rounded-xl border border-slate-200 bg-white p-4 text-left shadow-xl transition duration-150`}>
                           <span className="flex items-center justify-between gap-2">
                             <span className="font-semibold text-slate-900">{event.type} | {event.clients}</span>
-                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] capitalize text-slate-600">{event.status}</span>
+                             <span className={`rounded-full px-2 py-0.5 text-[10px] capitalize ${eventStatusColor(event.status).badge}`}>{event.status}</span>
                           </span>
                           <span className="mt-2 flex items-center gap-1.5 text-xs text-slate-500"><MapPin className="size-3.5 shrink-0" />{event.venue}</span>
                           <span className="mt-3 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Booked services</span>
@@ -142,9 +143,7 @@ export default function DashboardCalendar({ events }: { events: { id: string; da
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-slate-100 px-4 py-3 text-xs text-slate-500 sm:px-5">
-        <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-orange-500" />Booked</span>
-        <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-amber-400" />Pending</span>
-        <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-slate-400" />Completed</span>
+        {EVENT_STATUS_COLORS.map((group) => <span key={group.label} className="inline-flex items-center gap-1.5"><span className={`size-2 shrink-0 rounded-full ${group.dot}`} />{group.label}</span>)}
         <span className="ml-auto">Select an event to preview details</span>
       </div>
     </section>

@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import EventSection from "@/components/events/event-section";
 
 function label(value: string) {
   return value.replace(/^DJEP_|^wn_/, "").replace(/_/g, " ").toLowerCase();
@@ -18,6 +19,6 @@ function planningValue(value: unknown) {
 }
 
 export default function EventPlanning({ planning }: { planning: Prisma.JsonValue }) {
-  if (!planning || typeof planning !== "object" || Array.isArray(planning) || !Object.values(planning).some(Boolean)) return null;
-  return <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5"><h2 className="font-semibold text-slate-900">Imported planning information</h2>{Object.entries(planning).filter(([key, value]) => key !== "migration references" && !!value).map(([key, value]) => <details key={key} className="rounded-xl border border-slate-200 p-4"><summary className="cursor-pointer text-sm font-semibold capitalize text-slate-700">{label(key)}</summary><div className="mt-3"><PlanningValue value={planningValue(value)} /></div></details>)}</section>;
+  const entries = planning && typeof planning === "object" && !Array.isArray(planning) ? Object.entries(planning).filter(([key, value]) => key !== "migration references" && !!value) : [];
+  return <EventSection id="event-planning" title="Planning information">{entries.map(([key, value]) => <details key={key} className="rounded-xl border border-slate-200 p-4"><summary className="cursor-pointer text-sm font-semibold capitalize text-slate-700">{label(key)}</summary><div className="mt-3"><PlanningValue value={planningValue(value)} /></div></details>)}{!entries.length && <p className="text-sm text-slate-500">No imported planning information for this event.</p>}</EventSection>;
 }

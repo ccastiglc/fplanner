@@ -1,4 +1,4 @@
-import Link from "next/link";
+import SectionNavigation from "@/components/common/section-navigation";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import BusinessProfileForm from "@/components/settings/business-profile-form";
@@ -47,12 +47,7 @@ export default async function SettingsPage({
         <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Settings</h1>
         <p className="mt-1 text-sm text-slate-500">Manage your business profile and planner data.</p>
       </div>
-      <nav aria-label="Settings sections" className="sticky top-[68px] z-20 -mx-4 mb-6 border-y border-slate-200 bg-slate-50/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-        <div className="flex gap-2 overflow-x-auto">
-          <Link href="#business-profile" className="shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-white hover:text-slate-900">Business Profile</Link>
-          <Link href="#data-management" className="shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-white hover:text-slate-900">Data Management</Link>
-        </div>
-      </nav>
+      <SectionNavigation label="Settings sections" sections={[{ id: "business-profile", label: "Business Profile" }, { id: "data-management", label: "Data Management" }]} />
       <div className="space-y-6">
         <BusinessProfileForm
           profile={{

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, CalendarCheck2, Clock3, Sparkles } from "lucide-react";
 import { DEMO_TASKS } from "@/components/dashboard/dashboard-data";
+import { eventStatusColor } from "@/lib/event-status-colors";
 
 export function EventCountsWidget({ counts }: { counts: [string, number][] }) {
   return (
@@ -15,7 +16,7 @@ export function EventCountsWidget({ counts }: { counts: [string, number][] }) {
       <div className="mt-4 space-y-3">
         {counts.map(([status, count]) => (
           <div key={status} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5">
-            <span className="text-sm text-slate-600">{status}</span>
+            <span className="flex items-center gap-2 text-sm text-slate-600"><span className={`size-2 shrink-0 rounded-full ${eventStatusColor(status).dot}`} />{status}</span>
             <span className="text-sm font-semibold tabular-nums text-slate-900">{count}</span>
           </div>
         ))}

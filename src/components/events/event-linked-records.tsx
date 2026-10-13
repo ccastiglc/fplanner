@@ -1,6 +1,7 @@
 "use client";
 
 import { eventInputClass } from "@/components/events/event-detail-fields";
+import EventSection from "@/components/events/event-section";
 
 export function ProfileSelect({ label, name, value, records, onChange, directory }: { label: string; name: string; value: string; records: { id: string; name: string }[]; onChange: (value: string) => void; directory: string }) {
   return (
@@ -17,8 +18,7 @@ export function ProfileSelect({ label, name, value, records, onChange, directory
 
 export function AssignmentRows({ rows, setRows, records }: { rows: { staffId: string; role: string; fee: string }[]; setRows: (rows: { staffId: string; role: string; fee: string }[]) => void; records: { id: string; name: string }[] }) {
   return (
-    <section className="space-y-4 border-t border-slate-100 pt-6">
-      <h2 className="font-semibold text-slate-900">Staff assignments</h2>
+    <EventSection id="event-staff" title="Staff assignments">
       <input type="hidden" name="staff" value={JSON.stringify(rows)} />
       {rows.map((row, index) => (
         <div key={index} className="grid gap-3 rounded-xl border border-slate-200 p-4 sm:grid-cols-3">
@@ -29,14 +29,13 @@ export function AssignmentRows({ rows, setRows, records }: { rows: { staffId: st
         </div>
       ))}
       {rows.length < 15 && <button type="button" onClick={() => setRows([...rows, { staffId: "", role: "dj", fee: "0" }])} className="text-sm font-semibold text-orange-700">Add staff</button>}
-    </section>
+    </EventSection>
   );
 }
 
 export function ServiceRows({ rows, setRows, records }: { rows: { serviceId: string; quantity: number; bookedFee: string }[]; setRows: (rows: { serviceId: string; quantity: number; bookedFee: string }[]) => void; records: { id: string; name: string; price: string }[] }) {
   return (
-    <section className="space-y-4 border-t border-slate-100 pt-6">
-      <h2 className="font-semibold text-slate-900">Package and add-ons</h2>
+    <EventSection id="event-services" title="Package and add-ons">
       <input type="hidden" name="services" value={JSON.stringify(rows)} />
       {rows.map((row, index) => (
         <div key={index} className="grid gap-3 rounded-xl border border-slate-200 p-4 sm:grid-cols-3">
@@ -47,6 +46,6 @@ export function ServiceRows({ rows, setRows, records }: { rows: { serviceId: str
         </div>
       ))}
       {rows.length < 21 && <button type="button" onClick={() => setRows([...rows, { serviceId: "", quantity: 1, bookedFee: "0" }])} className="text-sm font-semibold text-orange-700">Add service</button>}
-    </section>
+    </EventSection>
   );
 }
