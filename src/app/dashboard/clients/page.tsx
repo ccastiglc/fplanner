@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Plus, Search, UsersRound } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import AlphabetIndex from "@/components/dashboard/alphabet-index";
 
 const ALPHABET = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ", "#"];
 
@@ -74,7 +75,7 @@ export default async function ClientsPage({
         <button type="submit" className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Search clients</button>
         {term && <Link href="/dashboard/clients" className="rounded-xl border border-slate-200 px-4 py-2.5 text-center text-sm font-medium text-slate-600 hover:bg-slate-50">Clear</Link>}
       </form>
-      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_36px]">
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_56px]">
         <section aria-label="Client records" className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-4 text-sm font-medium text-slate-600"><UsersRound className="size-4 text-orange-500" />{clients.length} {clients.length === 1 ? "client" : "clients"}{term ? ` matching “${term}”` : ""}</div>
           {clients.length === 0 ? (
@@ -143,15 +144,7 @@ export default async function ClientsPage({
             </div>
           )}
         </section>
-        <nav aria-label="Jump to clients by first letter" className="order-first -mx-4 mb-1 overflow-x-auto border-y border-slate-200 bg-white px-3 py-2 lg:order-last lg:sticky lg:top-24 lg:mx-0 lg:mb-0 lg:overflow-visible lg:rounded-xl lg:border lg:p-1">
-          <div className="flex w-max gap-1 lg:w-auto lg:flex-col">
-            {ALPHABET.map((letter) => presentLetters.has(letter) ? (
-              <a key={letter} href={`#clients-${letter}`} aria-label={`Jump to clients starting with ${letter}`} className="grid size-8 shrink-0 place-items-center rounded-lg text-xs font-semibold text-slate-600 hover:bg-orange-50 hover:text-orange-700">{letter}</a>
-            ) : (
-              <span key={letter} aria-disabled="true" className="grid size-8 shrink-0 place-items-center rounded-lg text-xs text-slate-300">{letter}</span>
-            ))}
-          </div>
-        </nav>
+        <AlphabetIndex prefix="clients" letters={presentLetters} />
       </div>
     </div>
   );
