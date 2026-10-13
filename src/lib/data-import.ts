@@ -51,6 +51,37 @@ function securePhotoUrl(value: string) {
   return null;
 }
 
+function secureWebUrl(value: string) {
+  if (!value.trim()) return null;
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+function importedBoolean(value: string) {
+  return ["true", "yes", "y", "1", "on"].includes(value.trim().toLowerCase());
+}
+
+function importedFeatures(value: string) {
+  return value.split(/[;,]/).map((feature) => feature.trim()).filter(Boolean).slice(0, 50);
+}
+
+function venueContacts(row: ImportedRow) {
+  return Array.from({ length: 5 }, (_, index) => {
+    const number = index + 1;
+    const name = importValue(row, `Contact ${number} Name`, `Contact${number} Name`, `Contact Name ${number}`);
+    const phone = importValue(row, `Contact ${number} Phone`, `Contact${number} Phone`, `Contact Phone ${number}`);
+    const email = importValue(row, `Contact ${number} Email`, `Contact${number} Email`, `Contact Email ${number}`);
+    const position = importValue(row, `Contact ${number} Position`, `Contact${number} Position`, `Contact Position ${number}`);
+    const notes = importValue(row, `Contact ${number} Notes`, `Contact${number} Notes`, `Contact Notes ${number}`);
+    if (![name, phone, email, position, notes].some(Boolean)) return null;
+    return { name: name || `Contact ${number}`, phone: phone || null, email: email || null, position: position || null, notes: redactNotes(notes) || null, sortOrder: index };
+  }).filter((contact): contact is NonNullable<typeof contact> => contact !== null);
+}
+
 function redactNotes(value: string) {
   return value
     .replace(/<(\w*?(?:PASSWORD|TOKEN|SECRET)\w*)>[^<]*<\/\1>/gi, "<$1>[REDACTED]</$1>")
@@ -147,18 +178,42 @@ export function mapImportRow(entity: ImportEntity, row: ImportedRow, source: "dj
 
   if (entity === "venues") {
     const name = required(importValue(row, "Venue Name", "Name"), "venue name");
+    const country = importValue(row, "Country");
     return {
       model: "venues" as const,
       data: {
         organization: { connect: { id: organizationId } },
+        externalId: importValue(row, "Venue ID", "External ID", "ID") || null,
         name,
-        address: address(row),
+        address: importValue(row, "Address", "Street Address", "Address 1") || null,
+        address2: importValue(row, "Address 2", "Address Line 2") || null,
         city: importValue(row, "City") || null,
         state: importValue(row, "State", "Province") || null,
         postalCode: importValue(row, "Zip Code / Postal Code", "ZIP Code", "Postal Code") || null,
-        country: importValue(row, "Country") || "USA",
+        country: country === "US" ? "USA" : country || "USA",
+        telephone: importValue(row, "Telephone", "Phone", "Phone Number") || null,
+        faxPhone: importValue(row, "Fax Phone", "Fax", "Fax Number") || null,
+        cellPhone: importValue(row, "Cell Phone", "Mobile Phone") || null,
+        email: importValue(row, "Email", "Email Address") || null,
+        website: secureWebUrl(importValue(row, "Website", "Web Site", "URL")),
+        manager: importValue(row, "Manager", "Venue Manager") || null,
+        directions: redactNotes(importValue(row, "Directions", "Driving Directions")) || null,
+        comments: redactNotes(importValue(row, "Comments", "Notes")) || null,
+        xmlInfo: importValue(row, "XML Info", "XML Information") || null,
+        category: importValue(row, "Category", "Venue Category") || null,
+        distance: importValue(row, "Distance") || null,
+        travelTime: importValue(row, "Travel Time") || null,
+        travelFee: importValue(row, "Travel Fee") || null,
+        setupFee: importValue(row, "Setup Fee") || null,
+        taxRate: importValue(row, "Tax Rate", "Tax") || null,
+        needsApproval: importedBoolean(importValue(row, "Needs Approval", "Needs Approval?")),
+        excludeFromInfoForm: importedBoolean(importValue(row, "Exclude From Info Form", "Exclude Info Form", "Exclude from Info Form?")),
+        oneTimeVenue: importedBoolean(importValue(row, "One-Time Venue", "One Time Venue", "One-Time")),
+        profileImageUrl: securePhotoUrl(importValue(row, "Profile Image URL", "Photo URL", "Image URL")),
         capacity: integer(importValue(row, "Capacity", "Guest Capacity"), "venue capacity"),
         hourlyRate: decimal(importValue(row, "Hourly Rate", "Rate"), "venue hourly rate", true),
+        features: importedFeatures(importValue(row, "Features", "Venue Features")),
+        contacts: { create: venueContacts(row) },
       },
     };
   }

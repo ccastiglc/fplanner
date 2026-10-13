@@ -81,7 +81,7 @@ export default function DataManagement({
           <span className="text-xs text-slate-500">More coming soon…</span>
         </div>
         <p className="mt-2 text-xs leading-relaxed text-slate-500">Other CSV/XLSX files are imported best-effort using recognized column headings; complete field support is not guaranteed.</p>
-        <p className="mt-1 text-xs leading-relaxed text-slate-500">The supplied DJ Event Planner client export is mapped; mappings for its other export types can be refined as sample files are provided.</p>
+        <p className="mt-1 text-xs leading-relaxed text-slate-500">DJ Event Planner client and venue CSV exports are mapped, including the five venue contact records.</p>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">

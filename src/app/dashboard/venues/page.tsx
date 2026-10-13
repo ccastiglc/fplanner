@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MapPin, Search } from "lucide-react";
+import { MapPin, Plus, Search } from "lucide-react";
 import { auth } from "@/auth";
 import AlphabetIndex from "@/components/dashboard/alphabet-index";
 import { prisma } from "@/lib/prisma";
@@ -38,6 +39,12 @@ export default async function VenuesPage({
           { state: contains },
           { postalCode: contains },
           { country: contains },
+          { externalId: contains },
+          { telephone: contains },
+          { cellPhone: contains },
+          { email: contains },
+          { manager: contains },
+          { category: contains },
           { status: contains },
         ],
       } : {}),
@@ -54,10 +61,15 @@ export default async function VenuesPage({
 
   return (
     <div className="mx-auto w-full max-w-[1400px]">
-      <div className="mb-5">
-        <p className="text-sm font-medium text-orange-600">Relationship management</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Venues</h1>
-        <p className="mt-1 text-sm text-slate-500">Search and browse venues saved for your events.</p>
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-sm font-medium text-orange-600">Relationship management</p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Venues</h1>
+          <p className="mt-1 text-sm text-slate-500">Search, browse, and edit venue profiles.</p>
+        </div>
+        <Link href="/dashboard/venues/new" className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-semibold text-brand-accent-foreground transition hover:bg-orange-600">
+          <Plus className="size-4" />Add venue
+        </Link>
       </div>
       <form method="get" className="mb-5 flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:flex-row">
         <label className="flex min-w-0 flex-1 items-center gap-2 px-2">
@@ -74,7 +86,7 @@ export default async function VenuesPage({
             <div className="px-5 py-14 text-center">
               <MapPin className="mx-auto size-8 text-slate-300" />
               <p className="mt-3 text-sm font-medium text-slate-700">{term ? "No matching venues" : "No venues yet"}</p>
-              <p className="mt-1 text-sm text-slate-500">{term ? "Try a different venue name or address." : "Venues added for your events will appear here."}</p>
+              <p className="mt-1 text-sm text-slate-500">{term ? "Try a different venue name or detail." : "Add a venue profile or import your DJEP venue CSV."}</p>
             </div>
           ) : (
             <div>
@@ -84,8 +96,8 @@ export default async function VenuesPage({
                   <div className="divide-y divide-slate-100">
                     {groups.get(letter)?.map((venue, venueIndex) => {
                       const features = venueFeatures(venue.features);
-                      return (
-                        <article key={venue.id} className={`flex flex-col gap-4 p-4 sm:px-5 lg:flex-row lg:items-center ${venueIndex % 2 === 0 ? "bg-white" : "bg-slate-50/60"}`}>
+                        return (
+                          <Link href={`/dashboard/venues/${venue.id}`} key={venue.id} className={`flex flex-col gap-4 p-4 transition hover:bg-orange-50/40 sm:px-5 lg:flex-row lg:items-center ${venueIndex % 2 === 0 ? "bg-white" : "bg-slate-50/60"}`}>
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
                               <h3 className="font-semibold text-slate-900">{venue.name}</h3>
@@ -98,7 +110,7 @@ export default async function VenuesPage({
                             <span>{venue.capacity ? `${venue.capacity} capacity` : "Capacity not set"}</span>
                             <span>{venue.hourlyRate ? `$${Number(venue.hourlyRate).toFixed(0)}/hr` : "Rate not set"}</span>
                           </div>
-                        </article>
+                          </Link>
                       );
                     })}
                   </div>
