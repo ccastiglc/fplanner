@@ -2,8 +2,10 @@ import Link from "next/link";
 import type { Venue, VenueContact } from "@prisma/client";
 import { deleteVenue, saveVenue } from "@/app/actions/venues";
 import ConfirmDeleteButton from "@/components/common/confirm-delete-button";
+import VenueAddressFields from "@/components/venues/venue-address-fields";
+import VenueFiles from "@/components/venues/venue-files";
 
-type VenueProfile = Venue & { contacts: VenueContact[] };
+type VenueProfile = Venue & { contacts: VenueContact[]; files: { id: string; originalName: string; mimeType: string; size: number; createdAt: Date }[] };
 
 const inputClass = "mt-1.5 w-full rounded-xl border border-slate-300 px-3.5 py-3 font-normal outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100";
 const labelClass = "block text-sm font-medium text-slate-700";
@@ -41,12 +43,11 @@ export default function VenueForm({ venue, error }: { venue?: VenueProfile; erro
       {error && <p role="alert" className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error === "url" ? "Website and image URLs must use HTTP or HTTPS." : "Check the venue fields and try again."}</p>}
       {venue && <div className="mb-4 flex justify-end"><ConfirmDeleteButton action={deleteVenue} fieldName="venueId" recordId={venue.id} entityLabel="venue" itemName={venue.name} consequences="This permanently deletes the venue profile and its contacts. Events remain, but their venue association is removed." /></div>}
       <form action={saveVenue} className="space-y-7 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-        {venue && <input type="hidden" name="venueId" value={venue.id} />}
+        <input type="hidden" name="venueId" value={venue?.id ?? ""} />
 
         <section aria-labelledby="venue-details-heading" className="grid gap-5 sm:grid-cols-2">
           <h2 id="venue-details-heading" className="text-base font-semibold text-slate-900 sm:col-span-2">Venue details</h2>
           <Field name="name" label="Venue name" value={venue?.name} maxLength={200} />
-          <Field name="externalId" label="DJEP venue ID" value={venue?.externalId} maxLength={255} />
           <Field name="category" label="Category" value={venue?.category} maxLength={160} />
           <Field name="status" label="Status" value={venue?.status ?? "active"} maxLength={40} />
           <Field name="profileImageUrl" label="Profile image URL" value={venue?.profileImageUrl} type="url" maxLength={2048} />
@@ -55,12 +56,7 @@ export default function VenueForm({ venue, error }: { venue?: VenueProfile; erro
 
         <section aria-labelledby="venue-address-heading" className="grid gap-5 border-t border-slate-100 pt-6 sm:grid-cols-2">
           <h2 id="venue-address-heading" className="text-base font-semibold text-slate-900 sm:col-span-2">Address and contact</h2>
-          <Field name="address" label="Address" value={venue?.address} />
-          <Field name="address2" label="Address 2" value={venue?.address2} />
-          <Field name="city" label="City" value={venue?.city} maxLength={120} />
-          <Field name="state" label="State / Province" value={venue?.state} maxLength={120} />
-          <Field name="postalCode" label="ZIP / Postal code" value={venue?.postalCode} maxLength={32} />
-          <Field name="country" label="Country" value={venue?.country} maxLength={120} />
+          <VenueAddressFields venue={venue ? { address: venue.address, address2: venue.address2, city: venue.city, state: venue.state, postalCode: venue.postalCode, country: venue.country } : undefined} />
           <Field name="telephone" label="Telephone" value={venue?.telephone} maxLength={80} />
           <Field name="faxPhone" label="Fax" value={venue?.faxPhone} maxLength={80} />
           <Field name="cellPhone" label="Cell phone" value={venue?.cellPhone} maxLength={80} />
@@ -110,6 +106,11 @@ export default function VenueForm({ venue, error }: { venue?: VenueProfile; erro
           <label className={`${labelClass} sm:col-span-2`}>Directions<textarea name="directions" defaultValue={venue?.directions ?? ""} maxLength={10000} rows={3} className={`${inputClass} resize-y`} /></label>
           <label className={`${labelClass} sm:col-span-2`}>Comments<textarea name="comments" defaultValue={venue?.comments ?? ""} maxLength={10000} rows={4} className={`${inputClass} resize-y`} /></label>
           <label className={`${labelClass} sm:col-span-2`}>XML info<textarea name="xmlInfo" defaultValue={venue?.xmlInfo ?? ""} maxLength={10000} rows={4} className={`${inputClass} resize-y`} /></label>
+          {venue ? (
+            <VenueFiles venueId={venue.id} files={venue.files.map((file) => ({ ...file, createdAt: file.createdAt.toISOString() }))} />
+          ) : (
+            <p className="text-sm text-slate-500 sm:col-span-2">Save the venue before uploading documents or photos.</p>
+          )}
         </section>
 
         <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-5">

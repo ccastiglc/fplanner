@@ -183,7 +183,6 @@ export function mapImportRow(entity: ImportEntity, row: ImportedRow, source: "dj
       model: "venues" as const,
       data: {
         organization: { connect: { id: organizationId } },
-        externalId: importValue(row, "Venue ID", "External ID", "ID") || null,
         name,
         address: importValue(row, "Address", "Street Address", "Address 1") || null,
         address2: importValue(row, "Address 2", "Address Line 2") || null,

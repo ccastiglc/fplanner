@@ -6,11 +6,11 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getSettingsOrganizationId } from "@/lib/settings-organization";
+import { removeVenueFile } from "@/lib/venue-file-storage";
 
 const text = z.string().trim().max(10000);
 const venueInput = z.object({
   venueId: z.string().trim().max(128),
-  externalId: z.string().trim().max(255),
   name: z.string().trim().min(1).max(200),
   address: text,
   address2: text,
@@ -88,7 +88,6 @@ export async function saveVenue(formData: FormData) {
 
   const contacts = venueContactData(input);
   const data = {
-    externalId: optional(input.externalId),
     name: input.name,
     address: optional(input.address),
     address2: optional(input.address2),
@@ -157,11 +156,12 @@ export async function deleteVenue(formData: FormData) {
 
   const venue = await prisma.venue.findFirst({
     where: { id: venueId, ...(session.user.organizationId ? { organizationId: session.user.organizationId } : {}) },
-    select: { id: true },
+    select: { id: true, files: { select: { storageKey: true, mimeType: true } } },
   });
   if (!venue) notFound();
 
   await prisma.venue.delete({ where: { id: venueId } });
+  await Promise.all(venue.files.map((file) => removeVenueFile(file.storageKey, file.mimeType)));
   revalidatePath("/dashboard/venues");
   redirect("/dashboard/venues?deleted=1");
 }

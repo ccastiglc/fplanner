@@ -39,7 +39,6 @@ export default async function VenuesPage({
           { state: contains },
           { postalCode: contains },
           { country: contains },
-          { externalId: contains },
           { telephone: contains },
           { cellPhone: contains },
           { email: contains },

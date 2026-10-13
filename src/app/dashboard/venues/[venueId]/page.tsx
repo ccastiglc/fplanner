@@ -16,7 +16,10 @@ export default async function VenueProfilePage({
   const [{ venueId }, query] = await Promise.all([params, searchParams]);
   const venue = await prisma.venue.findFirst({
     where: { id: venueId, ...(session.user.organizationId ? { organizationId: session.user.organizationId } : {}) },
-    include: { contacts: { orderBy: { sortOrder: "asc" } } },
+    include: {
+      contacts: { orderBy: { sortOrder: "asc" } },
+      files: { orderBy: { createdAt: "desc" } },
+    },
   });
   if (!venue) notFound();
 

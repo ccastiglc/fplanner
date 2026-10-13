@@ -20,6 +20,7 @@
 # production
 /build
 /storage/client-photos/
+/storage/venue-files/
 
 # misc
 .DS_Store

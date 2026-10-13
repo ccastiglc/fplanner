@@ -183,7 +183,6 @@ model Venue {
   id                  String       @id @default(cuid())
   organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId      String
-  externalId          String?
   name                String
   address             String?
   address2            String?
@@ -219,6 +218,7 @@ model Venue {
 
   events   Event[]
   contacts VenueContact[]
+  files    VenueFile[]
 }
 
 model VenueContact {
@@ -235,6 +235,19 @@ model VenueContact {
   updatedAt DateTime @updatedAt
 
   @@index([venueId])
+}
+
+model VenueFile {
+  id           String   @id @default(cuid())
+  venue        Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId      String
+  originalName String
+  storageKey   String   @unique
+  mimeType     String
+  size         Int
+  createdAt    DateTime @default(now())
+
+  @@index([venueId, createdAt])
 }
 
 model Event {

@@ -75,9 +75,9 @@ async function getExportRows(entity: ExportEntity, organizationId: string | null
       return [`Contact ${number} Name`, `Contact ${number} Phone`, `Contact ${number} Email`, `Contact ${number} Position`, `Contact ${number} Notes`];
     }).flat();
     return {
-      headers: ["Venue ID", "Venue Name", "Address", "Address 2", "City", "State", "Zip Code / Postal Code", "Country", "Telephone", "Fax Phone", "Cell Phone", "Email", "Website", "Manager", "Directions", "Comments", "Needs Approval", "Exclude From Info Form", "Distance", "XML Info", "Category", "Travel Time", "Travel Fee", "Setup Fee", "Tax Rate", "One-Time Venue", "Profile Image URL", "Capacity", "Hourly Rate", "Status", "Features", ...contactHeaders],
+      headers: ["Venue Name", "Address", "Address 2", "City", "State", "Zip Code / Postal Code", "Country", "Telephone", "Fax Phone", "Cell Phone", "Email", "Website", "Manager", "Directions", "Comments", "Needs Approval", "Exclude From Info Form", "Distance", "XML Info", "Category", "Travel Time", "Travel Fee", "Setup Fee", "Tax Rate", "One-Time Venue", "Profile Image URL", "Capacity", "Hourly Rate", "Status", "Features", ...contactHeaders],
       rows: venues.map((venue) => [
-        venue.externalId, venue.name, venue.address, venue.address2, venue.city, venue.state, venue.postalCode, venue.country,
+        venue.name, venue.address, venue.address2, venue.city, venue.state, venue.postalCode, venue.country,
         venue.telephone, venue.faxPhone, venue.cellPhone, venue.email, venue.website, venue.manager, venue.directions, venue.comments,
         venue.needsApproval, venue.excludeFromInfoForm, venue.distance, venue.xmlInfo, venue.category, venue.travelTime, venue.travelFee,
         venue.setupFee, venue.taxRate, venue.oneTimeVenue, venue.profileImageUrl, venue.capacity, venue.hourlyRate?.toString(), venue.status,
