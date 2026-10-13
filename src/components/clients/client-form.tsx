@@ -229,7 +229,7 @@ export default function ClientForm({
           </label>
           <label className="block text-sm font-medium text-slate-700 sm:col-span-2">
             Email address
-            <input name="email" type="email" required maxLength={254} defaultValue={client?.email ?? ""} className={inputClass} />
+            <input name="email" type="email" maxLength={254} defaultValue={client?.email ?? ""} className={inputClass} />
           </label>
           <PhoneNumbersEditor label="Phone numbers" phones={clientPhones} onChange={setClientPhones} />
           <label className="block text-sm font-medium text-slate-700 sm:col-span-2">

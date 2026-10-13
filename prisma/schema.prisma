@@ -82,6 +82,10 @@ model OrganizationSettings {
   backgroundColor String       @default("0 0% 100%") /* white */
   logoUrl         String?
   faviconUrl      String?
+  businessPhone   String?
+  businessEmail   String?
+  businessWebsite String?
+  brandAccentColor String      @default("#FF6B00")
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 }
@@ -94,7 +98,7 @@ model Client {
   pronunciation  String?
   role           String       @default("client")
   contactName    String
-  email          String
+  email          String?
   phone          String?
   phoneType      String?      @default("mobile")
   address        String?
