@@ -7,7 +7,6 @@ import { prisma } from "@/lib/prisma";
 import { eventAccess } from "@/lib/event-access";
 import { BOOLEAN_FIELDS, DATE_FIELDS, EVENT_DETAIL_GROUPS, MONEY_FIELDS } from "@/lib/event-fields";
 import { eventDateValue, eventInstants, validTimezone } from "@/lib/event-time";
-import { completePastBookedEvents } from "@/lib/event-status.mjs";
 
 const id = z.string().trim().max(128);
 const money = z.string().trim().regex(/^-?\d{1,12}(?:\.\d{1,2})?$|^$/);
@@ -77,7 +76,6 @@ export async function saveEvent(_state: { error: string }, formData: FormData) {
   const saved = existing
     ? await prisma.event.update({ where: { id: existing.id }, data: eventData })
     : await prisma.event.create({ data: { ...eventData, createdBy: user.id } });
-  await completePastBookedEvents(prisma);
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/events");
   revalidatePath(`/dashboard/events/${saved.id}`);

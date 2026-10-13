@@ -5,7 +5,6 @@ import { getSettingsOrganizationId } from "@/lib/settings-organization";
 import { ImportRowError, mapImportRow, type ImportEntity } from "@/lib/data-import";
 import { parseSpreadsheet, importValue } from "@/lib/spreadsheet";
 import { importEvent } from "@/lib/event-import";
-import { completePastBookedEvents } from "@/lib/event-status.mjs";
 
 const entities = new Set<string>(["clients", "venues", "staff", "services", "payments", "events"]);
 const maxFileBytes = 10 * 1024 * 1024;
@@ -107,6 +106,5 @@ export async function POST(request: Request) {
     },
   });
 
-  if (String(entity) === "events") await completePastBookedEvents(prisma);
   return Response.json({ batchId: batch.id, total: rows.length, imported, errorCount, errors });
 }

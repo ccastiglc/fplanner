@@ -1,7 +1,6 @@
 import { auth } from "@/auth";
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { completePastBookedEvents } from "@/lib/event-status.mjs";
 
 export async function eventAccess(adminOnly = false) {
   const session = await auth();
@@ -23,6 +22,5 @@ export const eventRelations = {
 
 export async function visibleEvents() {
   const { where } = await eventAccess();
-  await completePastBookedEvents(prisma);
   return prisma.event.findMany({ where, include: eventRelations, orderBy: { eventDate: "asc" } });
 }
