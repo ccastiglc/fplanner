@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { saveBusinessProfile } from "@/app/actions/settings";
+import PhoneInput from "@/components/common/phone-input";
 
 export default function BusinessProfileForm({
   profile,
@@ -11,6 +12,7 @@ export default function BusinessProfileForm({
   profile: {
     businessName: string;
     businessPhone: string;
+    businessPhoneCountry: string;
     businessEmail: string;
     businessWebsite: string;
     logoUrl: string;
@@ -37,7 +39,7 @@ export default function BusinessProfileForm({
         </label>
         <label className="block text-sm font-medium text-slate-700">
           Business phone number
-          <input name="businessPhone" type="tel" maxLength={40} defaultValue={profile.businessPhone} className="mt-1.5 w-full rounded-xl border border-slate-300 px-3.5 py-3 font-normal outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100" />
+          <PhoneInput className="mt-1.5" countryName="businessPhoneCountry" numberName="businessPhone" defaultCountry={profile.businessPhoneCountry} defaultNumber={profile.businessPhone} inputClassName="w-full rounded-xl border border-slate-300 px-3.5 py-3 font-normal outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100" selectClassName="shrink-0 rounded-xl border border-slate-300 bg-white px-2 py-3 font-normal outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100" />
         </label>
         <label className="block text-sm font-medium text-slate-700">
           Business email

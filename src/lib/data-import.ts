@@ -1,4 +1,5 @@
 import { importValue, splitImportedEmails, type ImportedRow } from "@/lib/spreadsheet";
+import { DEFAULT_PHONE_COUNTRY, parsePhone } from "@/lib/phone";
 
 export type ImportEntity = "clients" | "venues" | "staff" | "services" | "payments";
 
@@ -78,7 +79,8 @@ function venueContacts(row: ImportedRow) {
     const position = importValue(row, `Contact ${number} Position`, `Contact${number} Position`, `Contact Position ${number}`);
     const notes = importValue(row, `Contact ${number} Notes`, `Contact${number} Notes`, `Contact Notes ${number}`);
     if (![name, phone, email, position, notes].some(Boolean)) return null;
-    return { name: name || `Contact ${number}`, phone: phone || null, email: email || null, position: position || null, notes: redactNotes(notes) || null, sortOrder: index };
+    const parsed = phone ? parsePhone(phone) : null;
+    return { name: name || `Contact ${number}`, phone: parsed?.number ?? null, phoneCountry: parsed?.country ?? DEFAULT_PHONE_COUNTRY, email: email || null, position: position || null, notes: redactNotes(notes) || null, sortOrder: index };
   }).filter((contact): contact is NonNullable<typeof contact> => contact !== null);
 }
 
@@ -99,9 +101,11 @@ function phoneNumbers(row: ImportedRow) {
     ["Cell Phone", "mobile"],
     ["Fax Phone", "fax"],
   ] as const;
-  const values: Array<{ number: string; type: "mobile" | "home" | "work" | "fax" | "other" }> = fields.flatMap(([header, type]) => {
+  const values: Array<{ number: string; type: "mobile" | "home" | "work" | "fax" | "other"; country: string }> = fields.flatMap(([header, type]) => {
     const value = importValue(row, header);
-    return value ? [{ number: value.slice(0, 40), type }] : [];
+    if (!value) return [];
+    const parsed = parsePhone(value);
+    return [{ number: parsed.number, type, country: parsed.country }];
   });
 
   if (!values.length) {
@@ -110,16 +114,21 @@ function phoneNumbers(row: ImportedRow) {
       for (const entry of value.split(";")) {
         const match = entry.trim().match(/^(mobile|home|work|fax|other)\s*:\s*(.+)$/i);
         if (match) {
+          const parsed = parsePhone(match[2].trim());
           values.push({
-            number: match[2].trim().slice(0, 40),
+            number: parsed.number,
             type: match[1].toLowerCase() as "mobile" | "home" | "work" | "fax" | "other",
+            country: parsed.country,
           });
         }
       }
     }
     if (!values.length) {
       const phone = importValue(row, "Phone", "Phone Number", "Telephone");
-      if (phone) values.push({ number: phone.slice(0, 40), type: "mobile" });
+      if (phone) {
+        const parsed = parsePhone(phone);
+        values.push({ number: parsed.number, type: "mobile", country: parsed.country });
+      }
     }
   }
 
@@ -149,6 +158,7 @@ export function mapImportRow(entity: ImportEntity, row: ImportedRow, source: "dj
       email: allEmails[1] ?? null,
       phone: null,
       phoneType: "mobile",
+      phoneCountry: DEFAULT_PHONE_COUNTRY,
       photoUrl: null,
     }] : [];
     const country = importValue(row, "Country");
@@ -164,6 +174,7 @@ export function mapImportRow(entity: ImportEntity, row: ImportedRow, source: "dj
         role: "client",
         phone: phones[0]?.number ?? null,
         phoneType: phones[0]?.type ?? "mobile",
+        phoneCountry: phones[0]?.country ?? DEFAULT_PHONE_COUNTRY,
         phoneNumbers: { create: phones },
         address: address(row),
         city: importValue(row, "City") || null,
@@ -180,6 +191,12 @@ export function mapImportRow(entity: ImportEntity, row: ImportedRow, source: "dj
   if (entity === "venues") {
     const name = required(importValue(row, "Venue Name", "Name"), "venue name");
     const country = importValue(row, "Country");
+    const telephoneValue = importValue(row, "Telephone", "Phone", "Phone Number");
+    const faxValue = importValue(row, "Fax Phone", "Fax", "Fax Number");
+    const cellValue = importValue(row, "Cell Phone", "Mobile Phone");
+    const telephone = telephoneValue ? parsePhone(telephoneValue) : null;
+    const faxPhone = faxValue ? parsePhone(faxValue) : null;
+    const cellPhone = cellValue ? parsePhone(cellValue) : null;
     return {
       model: "venues" as const,
       data: {
@@ -192,9 +209,12 @@ export function mapImportRow(entity: ImportEntity, row: ImportedRow, source: "dj
         state: importValue(row, "State", "Province") || null,
         postalCode: importValue(row, "Zip Code / Postal Code", "ZIP Code", "Postal Code") || null,
         country: country === "US" ? "USA" : country || "USA",
-        telephone: importValue(row, "Telephone", "Phone", "Phone Number") || null,
-        faxPhone: importValue(row, "Fax Phone", "Fax", "Fax Number") || null,
-        cellPhone: importValue(row, "Cell Phone", "Mobile Phone") || null,
+        telephone: telephone?.number ?? null,
+        telephoneCountry: telephone?.country ?? DEFAULT_PHONE_COUNTRY,
+        faxPhone: faxPhone?.number ?? null,
+        faxPhoneCountry: faxPhone?.country ?? DEFAULT_PHONE_COUNTRY,
+        cellPhone: cellPhone?.number ?? null,
+        cellPhoneCountry: cellPhone?.country ?? DEFAULT_PHONE_COUNTRY,
         email: importValue(row, "Email", "Email Address") || null,
         website: secureWebUrl(importValue(row, "Website", "Web Site", "URL")),
         manager: importValue(row, "Manager", "Venue Manager") || null,
@@ -230,6 +250,7 @@ export function mapImportRow(entity: ImportEntity, row: ImportedRow, source: "dj
         djepId: source === "djep" ? importValue(row, "Employee ID", "Staff ID") || null : null,
         email: emails(importValue(row, "Email", "Email Address"))[0] ?? null,
         phone: phones[0]?.number ?? null,
+        phoneCountry: phones[0]?.country ?? DEFAULT_PHONE_COUNTRY,
         specialty: importValue(row, "Specialty", "Role") || "dj",
         experienceLevel: importValue(row, "Experience Level") || "intermediate",
         status: importValue(row, "Status") || "available",

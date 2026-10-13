@@ -8,6 +8,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { removeClientPhoto } from "@/lib/client-photo-storage";
 import { eventReturnQuery } from "@/lib/event-return-query";
+import { DEFAULT_PHONE_COUNTRY, formatPhone, isCountryCode } from "@/lib/phone";
 
 const optionalText = z.string().trim().max(2000).optional();
 const optionalEmail = z.string().trim().max(254).email().or(z.literal(""));
@@ -15,7 +16,13 @@ const phoneInput = z.object({
   id: z.string().optional(),
   number: z.string().trim().min(1).max(40),
   type: z.enum(["mobile", "home", "work", "fax", "other"]),
+  country: z.string().trim().max(8).optional(),
 });
+
+function phoneData(phone: z.infer<typeof phoneInput>) {
+  const country = isCountryCode(phone.country) ? phone.country.toUpperCase() : DEFAULT_PHONE_COUNTRY;
+  return { number: formatPhone(phone.number, country), type: phone.type, country };
+}
 
 const clientInput = z.object({
   name: z.string().trim().min(1).max(160),
@@ -73,7 +80,7 @@ function clientPhotoData(value?: string | null) {
 
 function personData(person: z.infer<typeof personInput>) {
   const photoUrl = clientPhotoData(person.photoUrl);
-  const primaryPhone = person.phoneNumbers[0];
+  const primaryPhone = person.phoneNumbers[0] ? phoneData(person.phoneNumbers[0]) : null;
   return {
     name: person.name,
     pronunciation: person.pronunciation?.trim() || null,
@@ -81,17 +88,20 @@ function personData(person: z.infer<typeof personInput>) {
     email: person.email?.trim() || null,
     phone: primaryPhone?.number ?? null,
     phoneType: primaryPhone?.type ?? "mobile",
+    phoneCountry: primaryPhone?.country ?? DEFAULT_PHONE_COUNTRY,
     photoUrl,
     ...(photoUrl ? { photoStorageKey: null, photoMimeType: null } : {}),
   };
 }
 
 function additionalContactData(contact: z.infer<typeof additionalContactInput>) {
+  const primaryPhone = contact.phoneNumbers[0] ? phoneData(contact.phoneNumbers[0]) : null;
   return {
     name: contact.name,
     pronunciation: contact.pronunciation?.trim() || null,
     role: contact.role,
-    phone: contact.phoneNumbers[0]?.number ?? null,
+    phone: primaryPhone?.number ?? null,
+    phoneCountry: primaryPhone?.country ?? DEFAULT_PHONE_COUNTRY,
     email: contact.email?.trim() || null,
   };
 }
@@ -117,11 +127,11 @@ async function syncPhoneNumbers(
     if (phone.id && existing.some((item) => item.id === phone.id)) {
       await transaction.clientPhoneNumber.update({
         where: { id: phone.id },
-        data: { number: phone.number, type: phone.type },
+        data: phoneData(phone),
       });
     } else if (!phone.id) {
       await transaction.clientPhoneNumber.create({
-        data: { ...owner, number: phone.number, type: phone.type },
+        data: { ...owner, ...phoneData(phone) },
       });
     }
   }
@@ -155,6 +165,7 @@ export async function saveClient(formData: FormData) {
   const persons = personsResult.data;
   const contacts = contactsResult.data;
   const clientPhones = clientPhonesResult.data;
+  const clientPhone = clientPhones[0] ? phoneData(clientPhones[0]) : null;
 
   const data = {
     name: input.name,
@@ -162,8 +173,9 @@ export async function saveClient(formData: FormData) {
     contactName: input.name,
     role: input.role,
     email: input.email?.trim().toLowerCase() || null,
-    phone: clientPhones[0]?.number ?? null,
-    phoneType: clientPhones[0]?.type ?? "mobile",
+    phone: clientPhone?.number ?? null,
+    phoneType: clientPhone?.type ?? "mobile",
+    phoneCountry: clientPhone?.country ?? DEFAULT_PHONE_COUNTRY,
     address: input.address?.trim() || null,
     city: input.city?.trim() || null,
     state: input.state?.trim() || null,
@@ -184,17 +196,17 @@ export async function saveClient(formData: FormData) {
       data: {
         ...data,
         organization: { connect: { id: organizationId } },
-        phoneNumbers: { create: clientPhones.map(({ number, type }) => ({ number, type })) },
+        phoneNumbers: { create: clientPhones.map((phone) => phoneData(phone)) },
         persons: {
           create: persons.map((person) => ({
             ...personData(person),
-            phoneNumbers: { create: person.phoneNumbers.map(({ number, type }) => ({ number, type })) },
+            phoneNumbers: { create: person.phoneNumbers.map((phone) => phoneData(phone)) },
           })),
         },
         additionalContacts: {
           create: contacts.map((contact) => ({
             ...additionalContactData(contact),
-            phoneNumbers: { create: contact.phoneNumbers.map(({ number, type }) => ({ number, type })) },
+            phoneNumbers: { create: contact.phoneNumbers.map((phone) => phoneData(phone)) },
           })),
         },
       },

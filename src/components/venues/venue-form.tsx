@@ -2,12 +2,15 @@ import Link from "next/link";
 import type { Venue, VenueContact } from "@prisma/client";
 import { deleteVenue, saveVenue } from "@/app/actions/venues";
 import ConfirmDeleteButton from "@/components/common/confirm-delete-button";
+import PhoneInput from "@/components/common/phone-input";
 import VenueAddressFields from "@/components/venues/venue-address-fields";
 import VenueFiles from "@/components/venues/venue-files";
 
 type VenueProfile = Venue & { contacts: VenueContact[]; files: { id: string; originalName: string; mimeType: string; size: number; createdAt: Date }[] };
 
 const inputClass = "mt-1.5 w-full rounded-xl border border-slate-300 px-3.5 py-3 font-normal outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100";
+const phoneInputClass = "w-full rounded-xl border border-slate-300 px-3.5 py-3 font-normal outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100";
+const phoneSelectClass = "shrink-0 rounded-xl border border-slate-300 bg-white px-2 py-3 font-normal outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100";
 const labelClass = "block text-sm font-medium text-slate-700";
 
 function Field({
@@ -59,9 +62,9 @@ export default function VenueForm({ venue, error, eventId }: { venue?: VenueProf
           <h2 id="venue-address-heading" className="text-base font-semibold text-slate-900 sm:col-span-2">Address and contact</h2>
           <VenueAddressFields venue={venue ? { address: venue.address, address2: venue.address2, city: venue.city, state: venue.state, postalCode: venue.postalCode, country: venue.country } : undefined} />
           <Field name="timezone" label="Local time zone (auto-detected from U.S. ZIP when blank)" value={venue?.timezone} maxLength={120} />
-          <Field name="telephone" label="Telephone" value={venue?.telephone} maxLength={80} />
-          <Field name="faxPhone" label="Fax" value={venue?.faxPhone} maxLength={80} />
-          <Field name="cellPhone" label="Cell phone" value={venue?.cellPhone} maxLength={80} />
+          <label className={labelClass}>Telephone<PhoneInput className="mt-1.5" countryName="telephoneCountry" numberName="telephone" defaultCountry={venue?.telephoneCountry} defaultNumber={venue?.telephone} inputClassName={phoneInputClass} selectClassName={phoneSelectClass} /></label>
+          <label className={labelClass}>Fax<PhoneInput className="mt-1.5" countryName="faxPhoneCountry" numberName="faxPhone" defaultCountry={venue?.faxPhoneCountry} defaultNumber={venue?.faxPhone} inputClassName={phoneInputClass} selectClassName={phoneSelectClass} /></label>
+          <label className={labelClass}>Cell phone<PhoneInput className="mt-1.5" countryName="cellPhoneCountry" numberName="cellPhone" defaultCountry={venue?.cellPhoneCountry} defaultNumber={venue?.cellPhone} inputClassName={phoneInputClass} selectClassName={phoneSelectClass} /></label>
           <Field name="email" label="Email" value={venue?.email} type="text" maxLength={1000} />
           <Field name="manager" label="Manager" value={venue?.manager} maxLength={200} />
         </section>
@@ -95,7 +98,7 @@ export default function VenueForm({ venue, error, eventId }: { venue?: VenueProf
                 <legend className="px-1 text-sm font-semibold text-slate-800">Contact {number}</legend>
                 <Field name={`contact${number}Name`} label="Name" value={contact?.name} maxLength={200} />
                 <Field name={`contact${number}Position`} label="Position" value={contact?.position} maxLength={160} />
-                <Field name={`contact${number}Phone`} label="Phone" value={contact?.phone} maxLength={80} />
+                <label className={labelClass}>Phone<PhoneInput className="mt-1.5" countryName={`contact${number}Country`} numberName={`contact${number}Phone`} defaultCountry={contact?.phoneCountry} defaultNumber={contact?.phone} inputClassName={phoneInputClass} selectClassName={phoneSelectClass} /></label>
                 <Field name={`contact${number}Email`} label="Email" value={contact?.email} maxLength={254} />
                 <label className={`${labelClass} sm:col-span-2`}>Notes<textarea name={`contact${number}Notes`} defaultValue={contact?.notes ?? ""} maxLength={10000} rows={2} className={`${inputClass} resize-y`} /></label>
               </fieldset>

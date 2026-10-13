@@ -6,6 +6,7 @@ import type { Client, ClientAdditionalContact, ClientPerson, ClientPhoneNumber }
 import { deleteClient, saveClient } from "@/app/actions/clients";
 import ClientPhotoUpload from "@/components/clients/client-photo-upload";
 import ConfirmDeleteButton from "@/components/common/confirm-delete-button";
+import { DEFAULT_PHONE_COUNTRY, PHONE_COUNTRIES, formatPhone } from "@/lib/phone";
 
 const CLIENT_ROLES = [
   { value: "client", label: "Client" },
@@ -21,7 +22,7 @@ const PHONE_TYPES = [
   { value: "other", label: "Other" },
 ] as const;
 
-type PhoneDraft = Pick<ClientPhoneNumber, "number" | "type"> & { id?: string };
+type PhoneDraft = Pick<ClientPhoneNumber, "number" | "type" | "country"> & { id?: string };
 type PersonDraft = {
   id?: string;
   name: string;
@@ -66,10 +67,16 @@ function PhoneNumbersEditor({
     <fieldset className="space-y-3 sm:col-span-2">
       <legend className="mb-1 text-sm font-medium text-slate-700">{label}</legend>
       {phones.map((phone, index) => (
-        <div key={phone.id ?? `${label}-${index}`} className="grid gap-3 rounded-xl bg-slate-50 p-3 sm:grid-cols-[minmax(0,1fr)_180px_auto]">
+        <div key={phone.id ?? `${label}-${index}`} className="grid gap-3 rounded-xl bg-slate-50 p-3 sm:grid-cols-[150px_minmax(0,1fr)_180px_auto]">
+          <label className="block text-sm text-slate-600">
+            Country
+            <select value={phone.country} onChange={(event) => updatePhone(index, { country: event.target.value, number: formatPhone(phone.number, event.target.value) })} className={selectClass}>
+              {PHONE_COUNTRIES.map((option) => <option key={option.code} value={option.code}>{option.code} {option.dial}</option>)}
+            </select>
+          </label>
           <label className="block text-sm text-slate-600">
             Phone number
-            <input type="tel" inputMode="tel" value={phone.number} onChange={(event) => updatePhone(index, { number: event.target.value })} maxLength={40} required className={inputClass} />
+            <input type="tel" inputMode="tel" value={phone.number} onChange={(event) => updatePhone(index, { number: formatPhone(event.target.value, phone.country) })} maxLength={40} required className={inputClass} />
           </label>
           <label className="block text-sm text-slate-600">
             Type
@@ -80,7 +87,7 @@ function PhoneNumbersEditor({
           <button type="button" onClick={() => onChange(phones.filter((_, phoneIndex) => phoneIndex !== index))} className="self-end rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50">Remove</button>
         </div>
       ))}
-      <button type="button" onClick={() => onChange([...phones, { number: "", type: "mobile" }])} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-white">Add phone number</button>
+      <button type="button" onClick={() => onChange([...phones, { number: "", type: "mobile", country: DEFAULT_PHONE_COUNTRY }])} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-white">Add phone number</button>
     </fieldset>
   );
 }
@@ -102,9 +109,9 @@ export default function ClientForm({
   const [postalStatus, setPostalStatus] = useState("");
   const [clientPhones, setClientPhones] = useState<PhoneDraft[]>(() => {
     if (client?.phoneNumbers.length) {
-      return client.phoneNumbers.map(({ id, number, type }) => ({ id, number, type }));
+      return client.phoneNumbers.map(({ id, number, type, country }) => ({ id, number, type, country }));
     }
-    return client?.phone ? [{ number: client.phone, type: client.phoneType ?? "mobile" }] : [];
+    return client?.phone ? [{ number: client.phone, type: client.phoneType ?? "mobile", country: client.phoneCountry ?? DEFAULT_PHONE_COUNTRY }] : [];
   });
   const [persons, setPersons] = useState<PersonDraft[]>(
     client?.persons.map((person) => ({
@@ -116,8 +123,8 @@ export default function ClientForm({
       photoUrl: person.photoUrl ?? "",
       photoStorageKey: person.photoStorageKey,
       phoneNumbers: person.phoneNumbers.length
-        ? person.phoneNumbers.map(({ id, number, type }) => ({ id, number, type }))
-        : person.phone ? [{ number: person.phone, type: person.phoneType ?? "mobile" }] : [],
+        ? person.phoneNumbers.map(({ id, number, type, country }) => ({ id, number, type, country }))
+        : person.phone ? [{ number: person.phone, type: person.phoneType ?? "mobile", country: person.phoneCountry ?? DEFAULT_PHONE_COUNTRY }] : [],
     })) ?? []
   );
   const [contacts, setContacts] = useState<ContactDraft[]>(
@@ -127,8 +134,8 @@ export default function ClientForm({
       pronunciation: contact.pronunciation ?? "",
       role: contact.role,
       phoneNumbers: contact.phoneNumbers.length
-        ? contact.phoneNumbers.map(({ id, number, type }) => ({ id, number, type }))
-        : contact.phone ? [{ number: contact.phone, type: "mobile" }] : [],
+        ? contact.phoneNumbers.map(({ id, number, type, country }) => ({ id, number, type, country }))
+        : contact.phone ? [{ number: contact.phone, type: "mobile", country: contact.phoneCountry ?? DEFAULT_PHONE_COUNTRY }] : [],
       email: contact.email ?? "",
     })) ?? []
   );

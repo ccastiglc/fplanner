@@ -10,6 +10,7 @@ import { removeVenueFile } from "@/lib/venue-file-storage";
 import { venueTimezone } from "@/lib/venue-timezone";
 import { validTimezone } from "@/lib/event-time";
 import { eventReturnQuery } from "@/lib/event-return-query";
+import { DEFAULT_PHONE_COUNTRY, formatPhone, isCountryCode } from "@/lib/phone";
 
 const text = z.string().trim().max(10000);
 const venueInput = z.object({
@@ -23,8 +24,11 @@ const venueInput = z.object({
   country: z.string().trim().max(120),
   timezone: z.string().trim().refine((value) => !value || validTimezone(value)),
   telephone: z.string().trim().max(80),
+  telephoneCountry: z.string().trim().max(8),
   faxPhone: z.string().trim().max(80),
+  faxPhoneCountry: z.string().trim().max(8),
   cellPhone: z.string().trim().max(80),
+  cellPhoneCountry: z.string().trim().max(8),
   email: z.string().trim().max(1000),
   website: z.string().trim().max(2048),
   manager: z.string().trim().max(200),
@@ -42,12 +46,17 @@ const venueInput = z.object({
   hourlyRate: z.string().trim().regex(/^(?:\d+(?:\.\d{1,2})?)?$/),
   status: z.string().trim().min(1).max(40),
   features: text,
-  contact1Name: z.string().trim().max(200), contact1Phone: z.string().trim().max(80), contact1Email: z.string().trim().max(254), contact1Position: z.string().trim().max(160), contact1Notes: text,
-  contact2Name: z.string().trim().max(200), contact2Phone: z.string().trim().max(80), contact2Email: z.string().trim().max(254), contact2Position: z.string().trim().max(160), contact2Notes: text,
-  contact3Name: z.string().trim().max(200), contact3Phone: z.string().trim().max(80), contact3Email: z.string().trim().max(254), contact3Position: z.string().trim().max(160), contact3Notes: text,
-  contact4Name: z.string().trim().max(200), contact4Phone: z.string().trim().max(80), contact4Email: z.string().trim().max(254), contact4Position: z.string().trim().max(160), contact4Notes: text,
-  contact5Name: z.string().trim().max(200), contact5Phone: z.string().trim().max(80), contact5Email: z.string().trim().max(254), contact5Position: z.string().trim().max(160), contact5Notes: text,
+  contact1Name: z.string().trim().max(200), contact1Phone: z.string().trim().max(80), contact1Country: z.string().trim().max(8), contact1Email: z.string().trim().max(254), contact1Position: z.string().trim().max(160), contact1Notes: text,
+  contact2Name: z.string().trim().max(200), contact2Phone: z.string().trim().max(80), contact2Country: z.string().trim().max(8), contact2Email: z.string().trim().max(254), contact2Position: z.string().trim().max(160), contact2Notes: text,
+  contact3Name: z.string().trim().max(200), contact3Phone: z.string().trim().max(80), contact3Country: z.string().trim().max(8), contact3Email: z.string().trim().max(254), contact3Position: z.string().trim().max(160), contact3Notes: text,
+  contact4Name: z.string().trim().max(200), contact4Phone: z.string().trim().max(80), contact4Country: z.string().trim().max(8), contact4Email: z.string().trim().max(254), contact4Position: z.string().trim().max(160), contact4Notes: text,
+  contact5Name: z.string().trim().max(200), contact5Phone: z.string().trim().max(80), contact5Country: z.string().trim().max(8), contact5Email: z.string().trim().max(254), contact5Position: z.string().trim().max(160), contact5Notes: text,
 });
+
+function phoneValue(country: string | undefined, number: string) {
+  const code = isCountryCode(country) ? country.toUpperCase() : DEFAULT_PHONE_COUNTRY;
+  return { number: formatPhone(number, code), country: code };
+}
 
 function optionalUrl(value: string) {
   if (!value) return true;
@@ -68,11 +77,13 @@ function venueContactData(input: z.infer<typeof venueInput>) {
     const number = index + 1;
     const name = input[`contact${number}Name` as keyof typeof input] as string;
     const phone = input[`contact${number}Phone` as keyof typeof input] as string;
+    const phoneCountry = input[`contact${number}Country` as keyof typeof input] as string;
     const email = input[`contact${number}Email` as keyof typeof input] as string;
     const position = input[`contact${number}Position` as keyof typeof input] as string;
     const notes = input[`contact${number}Notes` as keyof typeof input] as string;
     if (![name, phone, email, position, notes].some(Boolean)) return null;
-    return { name: name || `Contact ${number}`, phone: optional(phone), email: optional(email), position: optional(position), notes: optional(notes), sortOrder: index };
+    const normalized = phone ? phoneValue(phoneCountry, phone) : null;
+    return { name: name || `Contact ${number}`, phone: normalized?.number ?? null, phoneCountry: normalized?.country ?? DEFAULT_PHONE_COUNTRY, email: optional(email), position: optional(position), notes: optional(notes), sortOrder: index };
   }).filter((contact) => contact !== null);
 }
 
@@ -91,6 +102,9 @@ export async function saveVenue(formData: FormData) {
   }
 
   const contacts = venueContactData(input);
+  const telephone = input.telephone ? phoneValue(input.telephoneCountry, input.telephone) : null;
+  const faxPhone = input.faxPhone ? phoneValue(input.faxPhoneCountry, input.faxPhone) : null;
+  const cellPhone = input.cellPhone ? phoneValue(input.cellPhoneCountry, input.cellPhone) : null;
   const data = {
     name: input.name,
     address: optional(input.address),
@@ -100,9 +114,12 @@ export async function saveVenue(formData: FormData) {
     postalCode: optional(input.postalCode),
     country: optional(input.country),
     timezone: input.timezone || await venueTimezone(input.postalCode, input.country),
-    telephone: optional(input.telephone),
-    faxPhone: optional(input.faxPhone),
-    cellPhone: optional(input.cellPhone),
+    telephone: telephone?.number ?? null,
+    telephoneCountry: telephone?.country ?? DEFAULT_PHONE_COUNTRY,
+    faxPhone: faxPhone?.number ?? null,
+    faxPhoneCountry: faxPhone?.country ?? DEFAULT_PHONE_COUNTRY,
+    cellPhone: cellPhone?.number ?? null,
+    cellPhoneCountry: cellPhone?.country ?? DEFAULT_PHONE_COUNTRY,
     email: optional(input.email),
     website: optional(input.website),
     manager: optional(input.manager),

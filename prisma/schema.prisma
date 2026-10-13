@@ -83,6 +83,7 @@ model OrganizationSettings {
   logoUrl          String?
   faviconUrl       String?
   businessPhone    String?
+  businessPhoneCountry String?  @default("US")
   businessEmail    String?
   businessWebsite  String?
   brandAccentColor String       @default("#FF6B00")
@@ -102,6 +103,7 @@ model Client {
   email           String?
   phone           String?
   phoneType       String?      @default("mobile")
+  phoneCountry    String?      @default("US")
   address         String?
   city            String?
   state           String?
@@ -135,6 +137,7 @@ model ClientPerson {
   email           String?
   phone           String?
   phoneType       String?             @default("mobile")
+  phoneCountry    String?             @default("US")
   photoUrl        String?
   photoStorageKey String?             @unique
   photoMimeType   String?
@@ -153,6 +156,7 @@ model ClientAdditionalContact {
   pronunciation String?
   role          String
   phone         String?
+  phoneCountry  String?             @default("US")
   email         String?
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
@@ -165,6 +169,7 @@ model ClientPhoneNumber {
   id                  String                   @id @default(cuid())
   number              String
   type                String                   @default("mobile")
+  country             String                   @default("US")
   clientId            String?
   personId            String?
   additionalContactId String?
@@ -194,8 +199,11 @@ model Venue {
   postalCode          String?
   country             String?
   telephone           String?
+  telephoneCountry    String?      @default("US")
   faxPhone            String?
+  faxPhoneCountry     String?      @default("US")
   cellPhone           String?
+  cellPhoneCountry    String?      @default("US")
   email               String?
   website             String?
   manager             String?
@@ -231,6 +239,7 @@ model VenueContact {
   venueId   String
   name      String
   phone     String?
+  phoneCountry String? @default("US")
   email     String?
   position  String?
   notes     String?
@@ -318,6 +327,7 @@ model Staff {
   name            String
   email           String?
   phone           String?
+  phoneCountry    String?      @default("US")
   specialty       String?      @default("dj")
   experienceLevel String?      @default("intermediate")
   status          String       @default("available")
@@ -349,6 +359,7 @@ model Vendor {
   contactName    String
   email          String
   phone          String?
+  phoneCountry   String?      @default("US")
   category       String       @default("venue") /* venue, catering, equipment, etc. */
   status         String       @default("active")
   rating         Decimal?     @default(0)

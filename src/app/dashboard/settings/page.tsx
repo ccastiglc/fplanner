@@ -53,6 +53,7 @@ export default async function SettingsPage({
           profile={{
             businessName: organization.name,
             businessPhone: organization.settings?.businessPhone ?? "",
+            businessPhoneCountry: organization.settings?.businessPhoneCountry ?? "US",
             businessEmail: organization.settings?.businessEmail ?? "",
             businessWebsite: organization.settings?.businessWebsite ?? "",
             logoUrl: organization.settings?.logoUrl ?? "",

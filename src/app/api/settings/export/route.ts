@@ -1,13 +1,18 @@
 import { Workbook, type CellValue } from "exceljs";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { countryDial } from "@/lib/phone";
 import { csvSafe } from "@/lib/spreadsheet";
 
 const entities = ["clients", "venues", "staff", "services", "payments", "events"] as const;
 type ExportEntity = (typeof entities)[number];
 
-function phonesText(phones: Array<{ number: string; type: string }>) {
-  return phones.map((phone) => `${phone.type}: ${phone.number}`).join("; ");
+function phonesText(phones: Array<{ number: string; type: string; country: string | null }>) {
+  return phones.map((phone) => `${phone.type}: ${countryDial(phone.country)} ${phone.number}`).join("; ");
+}
+
+function dialed(number: string | null, country: string | null) {
+  return number ? `${countryDial(country)} ${number}` : "";
 }
 
 function spreadsheetSafe(value: unknown): CellValue {
@@ -85,13 +90,13 @@ async function getExportRows(entity: ExportEntity, organizationId: string | null
       headers: ["Venue Name", "Address", "Address 2", "City", "State", "Zip Code / Postal Code", "Country", "Telephone", "Fax Phone", "Cell Phone", "Email", "Website", "Manager", "Directions", "Comments", "Needs Approval", "Exclude From Info Form", "Distance", "XML Info", "Category", "Travel Time", "Travel Fee", "Setup Fee", "Tax Rate", "One-Time Venue", "Profile Image URL", "Capacity", "Hourly Rate", "Status", "Features", ...contactHeaders],
       rows: venues.map((venue) => [
         venue.name, venue.address, venue.address2, venue.city, venue.state, venue.postalCode, venue.country,
-        venue.telephone, venue.faxPhone, venue.cellPhone, venue.email, venue.website, venue.manager, venue.directions, venue.comments,
+        dialed(venue.telephone, venue.telephoneCountry), dialed(venue.faxPhone, venue.faxPhoneCountry), dialed(venue.cellPhone, venue.cellPhoneCountry), venue.email, venue.website, venue.manager, venue.directions, venue.comments,
         venue.needsApproval, venue.excludeFromInfoForm, venue.distance, venue.xmlInfo, venue.category, venue.travelTime, venue.travelFee,
         venue.setupFee, venue.taxRate, venue.oneTimeVenue, venue.profileImageUrl, venue.capacity, venue.hourlyRate?.toString(), venue.status,
         Array.isArray(venue.features) ? venue.features.filter((feature): feature is string => typeof feature === "string").join(", ") : "",
         ...Array.from({ length: 5 }, (_, index) => {
           const contact = venue.contacts.find((item) => item.sortOrder === index);
-          return [contact?.name, contact?.phone, contact?.email, contact?.position, contact?.notes];
+          return [contact?.name, dialed(contact?.phone ?? null, contact?.phoneCountry ?? null), contact?.email, contact?.position, contact?.notes];
         }).flat(),
       ]),
     };
@@ -101,7 +106,7 @@ async function getExportRows(entity: ExportEntity, organizationId: string | null
     const staff = await prisma.staff.findMany({ where, orderBy: { name: "asc" } });
     return {
       headers: ["Name", "Email", "Phone", "Specialty", "Experience Level", "Status", "Hourly Rate", "Notes"],
-      rows: staff.map((person) => [person.name, person.email, person.phone, person.specialty, person.experienceLevel, person.status, person.hourlyRate?.toString(), person.notes]),
+      rows: staff.map((person) => [person.name, person.email, dialed(person.phone, person.phoneCountry), person.specialty, person.experienceLevel, person.status, person.hourlyRate?.toString(), person.notes]),
     };
   }
 

@@ -4,6 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { saveStaff } from "@/app/actions/staff";
 import { eventInputClass } from "@/components/events/event-detail-fields";
 import EventReturnLink from "@/components/events/event-return-link";
+import PhoneInput from "@/components/common/phone-input";
+
+const phoneInputClass = "w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-normal text-slate-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100";
+const phoneSelectClass = "shrink-0 rounded-xl border border-slate-300 bg-white px-2 py-2.5 text-sm font-normal text-slate-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100";
 
 export default async function StaffProfilePage({ params, searchParams }: { params: Promise<{ staffId: string }>; searchParams: Promise<{ error?: string; saved?: string; eventId?: string }> }) {
   const { user } = await eventAccess(true);
@@ -19,7 +23,8 @@ export default async function StaffProfilePage({ params, searchParams }: { param
       <form action={saveStaff} className="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 sm:grid-cols-2">
         <input type="hidden" name="staffId" value={person?.id ?? ""} />
         <input type="hidden" name="eventContextId" value={query.eventId ?? ""} />
-        {(["name", "email", "phone", "specialty", "status"] as const).map((name) => <label key={name} className="text-sm font-medium capitalize text-slate-700">{name}<input name={name} defaultValue={person?.[name] ?? ""} required={name === "name"} maxLength={160} className={eventInputClass} /></label>)}
+        {(["name", "email", "specialty", "status"] as const).map((name) => <label key={name} className="text-sm font-medium capitalize text-slate-700">{name}<input name={name} defaultValue={person?.[name] ?? ""} required={name === "name"} maxLength={160} className={eventInputClass} /></label>)}
+        <label className="text-sm font-medium capitalize text-slate-700">Phone<PhoneInput className="mt-1.5" countryName="phoneCountry" numberName="phone" defaultCountry={person?.phoneCountry} defaultNumber={person?.phone} inputClassName={phoneInputClass} selectClassName={phoneSelectClass} /></label>
         <label className="text-sm font-medium text-slate-700">Hourly rate<input name="hourlyRate" defaultValue={person?.hourlyRate?.toString() ?? "0"} className={eventInputClass} /></label>
         <label className="text-sm font-medium text-slate-700 sm:col-span-2">Notes<textarea name="notes" defaultValue={person?.notes ?? ""} maxLength={10000} rows={4} className={eventInputClass} /></label>
         <button className="rounded-xl bg-orange-500 px-4 py-3 text-sm font-semibold text-brand-accent-foreground">Save staff</button>
