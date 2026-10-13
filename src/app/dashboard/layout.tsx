@@ -4,6 +4,15 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSettingsOrganizationId } from "@/lib/settings-organization";
 
+function publicHttpsUrl(value: string | null | undefined) {
+  if (!value) return null;
+  try {
+    return new URL(value).protocol === "https:" ? value : null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function DashboardRouteLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -22,6 +31,7 @@ export default async function DashboardRouteLayout({
     where: { id: organizationId },
     select: { name: true, settings: { select: { logoUrl: true, updatedAt: true } } },
   });
+  const logoUrl = publicHttpsUrl(organization?.settings?.logoUrl);
 
   return (
     <>
@@ -33,7 +43,7 @@ export default async function DashboardRouteLayout({
       <DashboardLayout
         canManageClients={session.user.role === "ADMIN"}
         businessName={organization?.name ?? "Fredo Productions"}
-        logoUrl={organization?.settings?.logoUrl ?? null}
+        logoUrl={logoUrl}
       >
         {children}
       </DashboardLayout>

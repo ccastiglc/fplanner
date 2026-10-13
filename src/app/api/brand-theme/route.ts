@@ -1,6 +1,4 @@
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { getSettingsOrganizationId } from "@/lib/settings-organization";
 
 function foregroundFor(hex: string) {
   const channels = [1, 3, 5].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16) / 255);
@@ -10,16 +8,13 @@ function foregroundFor(hex: string) {
 }
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) return new Response("Unauthorized", { status: 401 });
-
-  const organizationId = await getSettingsOrganizationId(session.user.organizationId);
-  const settings = await prisma.organizationSettings.findUnique({
-    where: { organizationId },
-    select: { brandAccentColor: true },
+  const organization = await prisma.organization.findUnique({
+    where: { slug: "fredo-productions" },
+    select: { settings: { select: { brandAccentColor: true } } },
   });
-  const accent = /^#[0-9a-fA-F]{6}$/.test(settings?.brandAccentColor ?? "")
-    ? settings?.brandAccentColor ?? "#FF6B00"
+  const brandAccentColor = organization?.settings?.brandAccentColor ?? "#FF6B00";
+  const accent = /^#[0-9a-fA-F]{6}$/.test(brandAccentColor)
+    ? brandAccentColor
     : "#FF6B00";
   const foreground = foregroundFor(accent);
   const css = `:root{--brand-accent:${accent};--brand-accent-foreground:${foreground};--brand-accent-50:color-mix(in srgb,${accent} 6%,white);--brand-accent-100:color-mix(in srgb,${accent} 12%,white);--brand-accent-200:color-mix(in srgb,${accent} 24%,white);--brand-accent-300:color-mix(in srgb,${accent} 40%,white);--brand-accent-400:color-mix(in srgb,${accent} 70%,white);--brand-accent-600:color-mix(in srgb,${accent} 86%,black);--brand-accent-700:color-mix(in srgb,${accent} 70%,black);--brand-accent-800:color-mix(in srgb,${accent} 55%,black);--brand-accent-900:color-mix(in srgb,${accent} 40%,black)}`;
@@ -27,8 +22,7 @@ export async function GET() {
   return new Response(css, {
     headers: {
       "Content-Type": "text/css; charset=utf-8",
-      "Cache-Control": "private, no-store",
-      Vary: "Cookie",
+      "Cache-Control": "public, max-age=300",
       "X-Content-Type-Options": "nosniff",
     },
   });
