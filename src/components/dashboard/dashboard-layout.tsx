@@ -45,7 +45,7 @@ export default function DashboardLayout({
       <Link
         href="/dashboard"
         aria-label="Fredo Productions dashboard home"
-        className={`mb-7 flex h-12 items-center gap-3 px-3 ${collapsed ? "justify-center" : ""}`}
+        className={`mb-7 flex h-12 items-center gap-3 ${collapsed ? "justify-center" : "px-3"}`}
         onClick={() => setMobileOpen(false)}
       >
         {logoUrl ? (
@@ -60,6 +60,15 @@ export default function DashboardLayout({
           </span>
         )}
       </Link>
+      <button
+        type="button"
+        onClick={() => setCollapsed((value) => !value)}
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        className="mb-4 hidden items-center justify-center rounded-xl border border-slate-200 p-2.5 text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900 md:flex"
+      >
+        {collapsed ? <ChevronRight className="size-4" /> : <ChevronLeft className="size-4" />}
+        {!collapsed && <span className="ml-2 text-xs">Collapse</span>}
+      </button>
       <nav aria-label="Dashboard navigation" className="flex-1 space-y-1">
         {NAV_ITEMS.map(({ label, href, icon: Icon, ready, adminOnly }) => {
           if (adminOnly && !canManageClients) return null;
@@ -106,22 +115,13 @@ export default function DashboardLayout({
           );
         })}
       </nav>
-      <button
-        type="button"
-        onClick={() => setCollapsed((value) => !value)}
-        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        className="mt-5 hidden items-center justify-center rounded-xl border border-slate-200 p-2.5 text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900 md:flex"
-      >
-        {collapsed ? <ChevronRight className="size-4" /> : <ChevronLeft className="size-4" />}
-        {!collapsed && <span className="ml-2 text-xs">Collapse</span>}
-      </button>
     </>
   );
 
   return (
     <div className="flex min-h-screen bg-slate-50 text-slate-900">
       <aside
-        className={`hidden shrink-0 flex-col border-r border-slate-200 bg-white p-4 transition-[width] duration-200 md:flex ${
+        className={`sticky top-0 z-20 hidden h-screen shrink-0 flex-col overflow-y-auto border-r border-slate-200 bg-white p-4 transition-[width] duration-200 md:flex ${
           collapsed ? "w-[76px]" : "w-[264px]"
         }`}
       >
