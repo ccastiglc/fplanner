@@ -29,9 +29,11 @@ export default function EventForm({ event, options }: {
           <label className="text-sm font-medium text-slate-700">Event type<input name="type" required maxLength={120} defaultValue={event.type} className={eventInputClass} /></label>
           <label className="text-sm font-medium text-slate-700">Status<select name="status" defaultValue={event.status} className={eventInputClass}>{[...new Set([...EVENT_STATUSES, event.status])].map((status) => <option key={status}>{status}</option>)}</select></label>
           <label className="text-sm font-medium text-slate-700">Event date<input type="date" name="eventDate" required defaultValue={event.eventDate} className={eventInputClass} /></label>
-          <label className="text-sm font-medium text-slate-700">Time zone<input name="timezone" required defaultValue={event.timezone} className={eventInputClass} /></label>
-          {(["setupTime", "startTime", "endTime"] as const).map((name) => <label key={name} className="text-sm font-medium text-slate-700">{name === "setupTime" ? "Setup time" : name === "startTime" ? "Start time" : "End time"}<input type="time" name={name} defaultValue={event[name]} className={eventInputClass} /></label>)}
-          <label className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" name="endNextDay" defaultChecked={event.endNextDay} />End is on the following day</label>
+          <div className="flex flex-wrap items-end gap-4 sm:col-span-2">
+            <label className="min-w-[140px] flex-1 text-sm font-medium text-slate-700">Time zone<input name="timezone" required defaultValue={event.timezone} className={eventInputClass} /></label>
+            {(["setupTime", "startTime", "endTime"] as const).map((name) => <label key={name} className="min-w-[104px] flex-1 text-sm font-medium text-slate-700">{name === "setupTime" ? "Setup time" : name === "startTime" ? "Start time" : "End time"}<input type="time" name={name} defaultValue={event[name]} className={eventInputClass} /></label>)}
+            <label className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" name="endNextDay" defaultChecked={event.endNextDay} />End is on the following day</label>
+          </div>
           <label className="text-sm font-medium text-slate-700">Guest count / estimate<input name="guestCount" maxLength={160} defaultValue={event.guestCount} className={eventInputClass} /></label>
           <label className="text-sm font-medium text-slate-700">Attire<input name="detail:Attire" maxLength={50000} defaultValue={event.details.Attire ?? ""} className={eventInputClass} /></label>
         </EventSection>
