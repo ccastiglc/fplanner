@@ -8,7 +8,8 @@ export const EVENT_DETAIL_GROUPS = [
 
 export const EVENT_FORM_SECTIONS = [
   { id: "event-overview", label: "Overview" },
-  { id: "event-profiles", label: "Linked Profiles" },
+  { id: "event-profiles", label: "Clients" },
+  { id: "event-venues", label: "Venues" },
   { id: "event-staff", label: "Staff" },
   { id: "event-services", label: "Services" },
   ...EVENT_DETAIL_GROUPS.map((group) => ({ id: group.id, label: group.title })),

@@ -9,7 +9,7 @@ import EventSection from "@/components/events/event-section";
 
 export default function EventForm({ event, options }: {
   event: { id: string; organizationId: string; name: string; type: string; status: string; eventDate: string; timezone: string; startTime: string; endTime: string; setupTime: string; endNextDay: boolean; clientId: string; venueId: string; secondVenueId: string; guestCount: string; notes: string; details: Record<string, string>; staff: { staffId: string; role: string; fee: string }[]; services: { serviceId: string; quantity: number; bookedFee: string }[] };
-  options: { clients: { id: string; organizationId: string; name: string }[]; venues: { id: string; organizationId: string; name: string }[]; staff: { id: string; organizationId: string; name: string }[]; services: { id: string; organizationId: string; name: string; price: string }[] };
+  options: { clients: { id: string; organizationId: string; name: string; email: string | null; phone: string | null }[]; venues: { id: string; organizationId: string; name: string }[]; staff: { id: string; organizationId: string; name: string }[]; services: { id: string; organizationId: string; name: string; price: string }[] };
 }) {
   const [state, action, pending] = useActionState(saveEvent, { error: "" });
   const [clientId, setClientId] = useState(event.clientId);
@@ -18,6 +18,7 @@ export default function EventForm({ event, options }: {
   const [staff, setStaff] = useState(event.staff);
   const [services, setServices] = useState(event.services);
   const organizationId = event.organizationId;
+  const selectedClient = options.clients.find((item) => item.id === clientId);
   return (
     <form action={action} className="space-y-6">
       <input type="hidden" name="eventId" value={event.id} />
@@ -37,11 +38,13 @@ export default function EventForm({ event, options }: {
           <label className="text-sm font-medium text-slate-700">Guest count / estimate<input name="guestCount" maxLength={160} defaultValue={event.guestCount} className={eventInputClass} /></label>
           <label className="text-sm font-medium text-slate-700">Attire<input name="detail:Attire" maxLength={50000} defaultValue={event.details.Attire ?? ""} className={eventInputClass} /></label>
         </EventSection>
-        <EventSection id="event-profiles" title="Linked profiles" grid>
-          <ProfileSelect label="Client" name="clientId" value={clientId} onChange={setClientId} records={options.clients.filter((item) => item.organizationId === organizationId)} directory="clients" />
+        <EventSection id="event-profiles" title="Clients" grid>
+          <ProfileSelect label="Client" name="clientId" value={clientId} onChange={setClientId} records={options.clients.filter((item) => item.organizationId === organizationId)} directory="clients" email={selectedClient?.email} phone={selectedClient?.phone} />
+          <p className="text-xs text-slate-500 sm:col-span-2">Names and contact details come from these profiles. Editing a linked profile saves this event first; validation errors keep you here.</p>
+        </EventSection>
+        <EventSection id="event-venues" title="Venues" grid>
           <ProfileSelect label="Venue" name="venueId" value={venueId} onChange={setVenueId} records={options.venues.filter((item) => item.organizationId === organizationId)} directory="venues" />
           <ProfileSelect label="Second venue" name="secondVenueId" value={secondVenueId} onChange={setSecondVenueId} records={options.venues.filter((item) => item.organizationId === organizationId)} directory="venues" />
-          <p className="text-xs text-slate-500 sm:col-span-2">Names and contact details come from these profiles. Editing a linked profile saves this event first; validation errors keep you here.</p>
         </EventSection>
         <AssignmentRows rows={staff} setRows={setStaff} records={options.staff.filter((item) => item.organizationId === organizationId)} />
         <ServiceRows rows={services} setRows={setServices} records={options.services.filter((item) => item.organizationId === organizationId)} />
