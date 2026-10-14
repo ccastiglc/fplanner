@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { Mail, Phone } from "lucide-react";
 import { saveEvent } from "@/app/actions/events";
 import { EVENT_STATUSES } from "@/lib/event-fields";
 import EventDetailFields, { eventInputClass } from "@/components/events/event-detail-fields";
@@ -9,7 +10,7 @@ import EventSection from "@/components/events/event-section";
 
 export default function EventForm({ event, options }: {
   event: { id: string; organizationId: string; name: string; type: string; status: string; eventDate: string; timezone: string; startTime: string; endTime: string; setupTime: string; endNextDay: boolean; clientId: string; venueId: string; secondVenueId: string; guestCount: string; notes: string; details: Record<string, string>; staff: { staffId: string; role: string; fee: string }[]; services: { serviceId: string; quantity: number; bookedFee: string }[] };
-  options: { clients: { id: string; organizationId: string; name: string; email: string | null; phone: string | null }[]; venues: { id: string; organizationId: string; name: string }[]; staff: { id: string; organizationId: string; name: string }[]; services: { id: string; organizationId: string; name: string; price: string }[] };
+  options: { clients: { id: string; organizationId: string; name: string; email: string | null; phone: string | null; persons: { id: string; name: string; email: string | null; phone: string | null }[] }[]; venues: { id: string; organizationId: string; name: string }[]; staff: { id: string; organizationId: string; name: string }[]; services: { id: string; organizationId: string; name: string; price: string }[] };
 }) {
   const [state, action, pending] = useActionState(saveEvent, { error: "" });
   const [clientId, setClientId] = useState(event.clientId);
@@ -39,8 +40,26 @@ export default function EventForm({ event, options }: {
           <label className="text-sm font-medium text-slate-700">Attire<input name="detail:Attire" maxLength={50000} defaultValue={event.details.Attire ?? ""} className={eventInputClass} /></label>
         </EventSection>
         <EventSection id="event-profiles" title="Clients" grid>
-          <ProfileSelect label="Client" name="clientId" value={clientId} onChange={setClientId} records={options.clients.filter((item) => item.organizationId === organizationId)} directory="clients" email={selectedClient?.email} phone={selectedClient?.phone} />
-          <p className="text-xs text-slate-500 sm:col-span-2">Names and contact details come from these profiles. Editing a linked profile saves this event first; validation errors keep you here.</p>
+          <ProfileSelect label="Client" name="clientId" value={clientId} onChange={setClientId} records={options.clients.filter((item) => item.organizationId === organizationId)} directory="clients" />
+          {selectedClient && (
+            <div className="sm:col-span-2 space-y-1.5">
+              {(() => {
+                const list = [{ id: "client", name: selectedClient.name, email: selectedClient.email, phone: selectedClient.phone }];
+                for (const p of selectedClient.persons) list.push({ id: p.id, name: p.name, email: p.email, phone: p.phone });
+                return (
+                  <ul className="space-y-1.5">
+                    {list.map((r) => (
+                      <li key={r.id} className="flex items-center gap-2 text-sm text-slate-700">
+                        <span className="font-medium">{r.name}</span>
+                        {r.email && <a href={`mailto:${r.email}`} aria-label={`Email ${r.name}`} className="text-slate-500 hover:text-orange-700"><Mail aria-hidden="true" className="size-4" /></a>}
+                        {r.phone && <a href={`tel:${r.phone.replace(/[^+\d]/g, "")}`} aria-label={`Call ${r.name}`} className="text-slate-500 hover:text-orange-700"><Phone aria-hidden="true" className="size-4" /></a>}
+                      </li>
+                    ))}
+                  </ul>
+                );
+              })()}
+            </div>
+          )}
         </EventSection>
         <EventSection id="event-venues" title="Venues" grid>
           <ProfileSelect label="Venue" name="venueId" value={venueId} onChange={setVenueId} records={options.venues.filter((item) => item.organizationId === organizationId)} directory="venues" />

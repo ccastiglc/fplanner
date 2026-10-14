@@ -4,7 +4,7 @@ import { Mail, Phone } from "lucide-react";
 import { eventInputClass } from "@/components/events/event-detail-fields";
 import EventSection from "@/components/events/event-section";
 
-export function ProfileSelect({ label, name, value, records, onChange, directory, email, phone }: { label: string; name: string; value: string; records: { id: string; name: string }[]; onChange: (value: string) => void; directory: string; email?: string | null; phone?: string | null }) {
+export function ProfileSelect({ label, name, value, records, onChange, directory }: { label: string; name: string; value: string; records: { id: string; name: string }[]; onChange: (value: string) => void; directory: string }) {
   return (
     <div>
       <label className="block text-sm font-medium text-slate-700">{label}
@@ -12,14 +12,23 @@ export function ProfileSelect({ label, name, value, records, onChange, directory
           <option value="">Not selected</option>{records.map((record) => <option key={record.id} value={record.id}>{record.name}</option>)}
         </select>
       </label>
-      {value && (
-        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
-          {email && <a href={`mailto:${email}`} aria-label={`Email ${label.toLowerCase()}`} className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-orange-700"><Mail aria-hidden="true" className="size-4" />Email</a>}
-          {phone && <a href={`tel:${phone.replace(/[^+\d]/g, "")}`} aria-label={`Call ${label.toLowerCase()}`} className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-orange-700"><Phone aria-hidden="true" className="size-4" />Call</a>}
-          <button type="submit" name="openProfile" value={`${directory}/${value}`} className="text-xs font-semibold text-orange-700 hover:underline">Save event &amp; edit {label.toLowerCase()}</button>
-        </div>
-      )}
+      {value && <button type="submit" name="openProfile" value={`${directory}/${value}`} className="mt-2 text-xs font-semibold text-orange-700 hover:underline">Save event &amp; edit {label.toLowerCase()}</button>}
     </div>
+  );
+}
+
+export function ContactList({ records }: { records: { id: string; name: string; email: string | null; phone: string | null }[] }) {
+  if (records.length === 0) return null;
+  return (
+    <ul className="sm:col-span-2 space-y-1.5">
+      {records.map((record) => (
+        <li key={record.id} className="flex items-center gap-2 text-sm text-slate-700">
+          <span className="font-medium">{record.name}</span>
+          {record.email && <a href={`mailto:${record.email}`} aria-label={`Email ${record.name}`} className="text-slate-500 hover:text-orange-700"><Mail aria-hidden="true" className="size-4" /></a>}
+          {record.phone && <a href={`tel:${record.phone.replace(/[^+\d]/g, "")}`} aria-label={`Call ${record.name}`} className="text-slate-500 hover:text-orange-700"><Phone aria-hidden="true" className="size-4" /></a>}
+        </li>
+      ))}
+    </ul>
   );
 }
 
