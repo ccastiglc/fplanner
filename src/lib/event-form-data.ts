@@ -11,7 +11,7 @@ export async function eventOptions(organizationId: string | null) {
     prisma.staff.findMany({ where, select: { id: true, organizationId: true, name: true }, orderBy: { name: "asc" } }),
     prisma.service.findMany({ where, select: { id: true, organizationId: true, name: true, price: true }, orderBy: { name: "asc" } }),
   ]);
-  return { venues, staff, clients: clients.map((client) => ({ id: client.id, organizationId: client.organizationId, name: [client.name, ...client.persons.map((person) => person.name)].join(" & "), email: client.email, phone: client.phone, persons: client.persons.map((person) => ({ id: person.id, name: person.name, email: person.email, phone: person.phone })) })), services: services.map((service) => ({ ...service, price: service.price.toString() })) };
+  return { venues, staff, clients: clients.map((client) => ({ id: client.id, organizationId: client.organizationId, name: client.name, email: client.email, phone: client.phone, persons: client.persons.map((person) => ({ id: person.id, name: person.name, email: person.email, phone: person.phone })) })), services: services.map((service) => ({ ...service, price: service.price.toString() })) };
 }
 
 export function eventFormData(event: Prisma.EventGetPayload<{ include: typeof eventRelations }>) {

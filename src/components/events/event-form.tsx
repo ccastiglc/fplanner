@@ -43,21 +43,15 @@ export default function EventForm({ event, options }: {
           <ProfileSelect label="Client" name="clientId" value={clientId} onChange={setClientId} records={options.clients.filter((item) => item.organizationId === organizationId)} directory="clients" />
           {selectedClient && (
             <div className="sm:col-span-2 space-y-1.5">
-              {(() => {
-                const list = [{ id: "client", name: selectedClient.name, email: selectedClient.email, phone: selectedClient.phone }];
-                for (const p of selectedClient.persons) list.push({ id: p.id, name: p.name, email: p.email, phone: p.phone });
-                return (
-                  <ul className="space-y-1.5">
-                    {list.map((r) => (
-                      <li key={r.id} className="flex items-center gap-2 text-sm text-slate-700">
-                        <span className="font-medium">{r.name}</span>
-                        {r.email && <a href={`mailto:${r.email}`} aria-label={`Email ${r.name}`} className="text-slate-500 hover:text-orange-700"><Mail aria-hidden="true" className="size-4" /></a>}
-                        {r.phone && <a href={`tel:${r.phone.replace(/[^+\d]/g, "")}`} aria-label={`Call ${r.name}`} className="text-slate-500 hover:text-orange-700"><Phone aria-hidden="true" className="size-4" /></a>}
-                      </li>
-                    ))}
-                  </ul>
-                );
-              })()}
+              <ul className="space-y-1.5">
+                {[{ id: "client", name: selectedClient.name, email: selectedClient.email, phone: selectedClient.phone }, ...selectedClient.persons.map((p) => ({ id: p.id, name: p.name, email: p.email, phone: p.phone }))].map((r) => (
+                  <li key={r.id} className="flex items-center gap-2 text-sm text-slate-700">
+                    <span className="font-medium">{r.name}</span>
+                    {r.email && <a href={`mailto:${r.email}`} aria-label={`Email ${r.name}`} className="text-slate-500 hover:text-orange-700"><Mail aria-hidden="true" className="size-4" /></a>}
+                    {r.phone && <a href={`tel:${r.phone.replace(/[^+\d]/g, "")}`} aria-label={`Call ${r.name}`} className="text-slate-500 hover:text-orange-700"><Phone aria-hidden="true" className="size-4" /></a>}
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </EventSection>
