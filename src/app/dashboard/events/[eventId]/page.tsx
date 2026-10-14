@@ -31,6 +31,12 @@ export default async function EventProfilePage({ params, searchParams }: { param
     <article className="mx-auto w-full max-w-[1200px] space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 flex-wrap items-start gap-5">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-orange-600">Event management</p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">{event.name}</h1>
+            <h2 className="mt-1 text-lg font-semibold text-slate-800">{eventDate}</h2>
+            <h3 className="mt-0.5 text-sm font-medium text-slate-600">Venue: {event.venue?.name ?? "Not selected"}</h3>
+          </div>
           {people.length > 0 && (
             <div className="flex flex-wrap gap-3">
               {people.map((person) => (
@@ -45,12 +51,6 @@ export default async function EventProfilePage({ params, searchParams }: { param
               ))}
             </div>
           )}
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-orange-600">Event management</p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">{event.name}</h1>
-            <h2 className="mt-1 text-lg font-semibold text-slate-800">{eventDate}</h2>
-            <h3 className="mt-0.5 text-sm font-medium text-slate-600">Venue: {event.venue?.name ?? "Not selected"}</h3>
-          </div>
         </div>
         <div className="flex items-center gap-3"><span className={`rounded-full px-3 py-1.5 text-sm font-semibold ${eventStatusColor(event.status).badge}`}>{event.status}</span>{user.role === "ADMIN" && <ConfirmDeleteButton action={deleteEvent} fieldName="eventId" recordId={event.id} entityLabel="event" itemName={event.name} consequences="This permanently deletes the event, its staff/service assignments, and timeline. Linked client, venue, and staff profiles remain." />}</div>
       </header>
