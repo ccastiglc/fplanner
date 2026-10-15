@@ -86,17 +86,6 @@
 
 :root, .dark {
   --selected: color-mix(in srgb, var(--primary) 10%, var(--surface));
-  --brand-accent: var(--primary);
-  --brand-accent-foreground: var(--primary-foreground);
-  --brand-accent-50: color-mix(in srgb, var(--primary) 7%, var(--surface));
-  --brand-accent-100: color-mix(in srgb, var(--primary) 12%, var(--surface));
-  --brand-accent-200: color-mix(in srgb, var(--primary) 24%, var(--surface));
-  --brand-accent-300: color-mix(in srgb, var(--primary) 40%, var(--surface));
-  --brand-accent-400: color-mix(in srgb, var(--primary) 70%, var(--surface));
-  --brand-accent-600: var(--primary-hover);
-  --brand-accent-700: var(--foreground);
-  --brand-accent-800: var(--foreground);
-  --brand-accent-900: var(--foreground);
   --success-background: color-mix(in srgb, var(--success) 10%, var(--surface));
   --warning-background: color-mix(in srgb, var(--warning) 10%, var(--surface));
   --error-background: color-mix(in srgb, var(--error) 10%, var(--surface));

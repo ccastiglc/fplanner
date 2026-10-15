@@ -48,17 +48,6 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --color-orange-50: var(--brand-accent-50);
-  --color-orange-100: var(--brand-accent-100);
-  --color-orange-200: var(--brand-accent-200);
-  --color-orange-300: var(--brand-accent-300);
-  --color-orange-400: var(--brand-accent-400);
-  --color-orange-500: var(--brand-accent);
-  --color-orange-600: var(--brand-accent-600);
-  --color-orange-700: var(--brand-accent-700);
-  --color-orange-800: var(--brand-accent-800);
-  --color-orange-900: var(--brand-accent-900);
-  --color-brand-accent-foreground: var(--brand-accent-foreground);
 }
 
 * {
@@ -86,7 +75,6 @@ body {
 .ui-button:hover { background: var(--hover); }
 .ui-button-primary { background: var(--primary); color: var(--primary-foreground); border-color: transparent; }
 .ui-button-primary:hover { background: var(--primary-hover); color: var(--primary-hover-foreground); }
-[class~="bg-orange-500"][class~="hover:bg-orange-600"]:hover { color: var(--primary-hover-foreground); }
 .ui-button:disabled, .ui-input:disabled { cursor: not-allowed; color: var(--disabled); background: var(--surface-secondary); }
 .ui-input { width: 100%; min-width: 0; background: var(--input); color: var(--foreground); border-color: var(--input-border); font-weight: 400; }
 .ui-input::placeholder { color: var(--muted-foreground); }
