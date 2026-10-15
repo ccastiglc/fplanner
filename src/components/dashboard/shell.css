@@ -20,7 +20,7 @@
 .shell-navigation { display: grid; align-content: start; flex: 1; gap: 0.25rem; padding: 0.5rem 0.75rem 1rem; }
 .shell-nav-item { display: flex; align-items: center; gap: 0.75rem; min-height: 2.625rem; padding: 0.625rem 0.75rem; border-radius: var(--radius-control); color: var(--secondary-foreground); font-size: 0.875rem; line-height: 1.5; text-decoration: none; transition: background-color var(--motion-fast), color var(--motion-fast); }
 .shell-nav-item:hover, .shell-menu-action:hover, .shell-icon-button:hover, .shell-collapse-button:hover, .shell-profile-trigger:hover { background: var(--hover); color: var(--foreground); }
-.shell-nav-item[aria-current="page"] { background: var(--selected); color: var(--foreground); font-weight: 600; box-shadow: inset 2px 0 var(--foreground); }
+.shell-nav-item[aria-current="page"] { background: var(--selected); color: var(--foreground); font-weight: 600; box-shadow: inset 2px 0 var(--primary); }
 .shell-nav-item[aria-disabled="true"] { color: var(--disabled); cursor: not-allowed; background: transparent; }
 .shell-nav-icon, .shell-menu-action svg, .shell-icon-button svg, .shell-collapse-button svg, .shell-profile-trigger > svg { width: 1.125rem; height: 1.125rem; flex-shrink: 0; }
 .shell-nav-label { flex: 1; }
