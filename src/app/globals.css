@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "./theme.css";
+@import "../components/dashboard/shell.css";
+@import "../components/dashboard/dashboard.css";
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
@@ -105,17 +107,4 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
-}
-
-.calendar-event-tooltip {
-  visibility: hidden;
-  opacity: 0;
-}
-
-@media (any-hover: hover) and (any-pointer: fine) {
-  .calendar-event-entry:hover .calendar-event-tooltip,
-  .calendar-event-entry:focus-visible .calendar-event-tooltip {
-    visibility: visible;
-    opacity: 1;
-  }
 }

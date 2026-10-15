@@ -5,13 +5,13 @@ import { useTheme } from "next-themes";
 
 const subscribe = () => () => {};
 
-export function AppearanceSelector() {
+export function AppearanceSelector({ showLabel = false }) {
   const { theme, setTheme } = useTheme();
   const mounted = useSyncExternalStore(subscribe, () => true, () => false);
 
   return (
     <label className="appearance-control">
-      <span className="sr-only">Appearance</span>
+      <span className={showLabel ? "" : "sr-only"}>Appearance</span>
       <select
         className="appearance-select"
         value={mounted ? theme ?? "system" : "system"}

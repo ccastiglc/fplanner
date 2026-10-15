@@ -1,4 +1,5 @@
 import SectionNavigation from "@/components/common/section-navigation";
+import { PageHeader } from "@/components/common/page-header";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import BusinessProfileForm from "@/components/settings/business-profile-form";
@@ -42,11 +43,7 @@ export default async function SettingsPage({
 
   return (
     <div className="mx-auto w-full max-w-[1200px]">
-      <div className="mb-5">
-        <p className="text-sm font-medium text-orange-600">Workspace</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Settings</h1>
-        <p className="mt-1 text-sm text-slate-500">Manage your business profile and planner data.</p>
-      </div>
+      <PageHeader title="Settings" eyebrow="Workspace" description="Manage your business profile and planner data." />
       <SectionNavigation label="Settings sections" sections={[{ id: "business-profile", label: "Business Profile" }, { id: "data-management", label: "Data Management" }]} />
       <div className="space-y-6">
         <BusinessProfileForm

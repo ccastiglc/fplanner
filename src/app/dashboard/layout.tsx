@@ -44,6 +44,7 @@ export default async function DashboardRouteLayout({
         canManageClients={session.user.role === "ADMIN"}
         businessName={organization?.name ?? "Fredo Productions"}
         logoUrl={logoUrl}
+        userName={session.user.name || session.user.username || "Account"}
       >
         {children}
       </DashboardLayout>

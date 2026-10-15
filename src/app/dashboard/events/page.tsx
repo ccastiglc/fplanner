@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader } from "@/components/common/page-header";
 import { CalendarDays, Plus, Search } from "lucide-react";
 import { eventAccess, visibleEvents } from "@/lib/event-access";
 import { eventStatusColor } from "@/lib/event-status-colors";
@@ -69,18 +70,9 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="mx-auto w-full max-w-[1400px]">
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-sm font-medium text-orange-600">Event management</p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Events</h1>
-          <p className="mt-1 text-sm text-slate-500">Browse, filter, and open event profiles.</p>
-        </div>
-        {user.role === "ADMIN" && (
-          <Link href="/dashboard/events/new" className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-semibold text-brand-accent-foreground transition hover:bg-orange-600">
-            <Plus className="size-4" />Add event
-          </Link>
-        )}
-      </div>
+      <PageHeader title="Events" eyebrow="Event management" description="Browse, filter, and open event profiles.">
+        {user.role === "ADMIN" && <Link href="/dashboard/events/new" className="ui-button ui-button-primary"><Plus aria-hidden="true" className="size-4" />Add event</Link>}
+      </PageHeader>
       <form method="get" className="mb-5 flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:flex-row sm:flex-wrap">
         <label className="flex min-w-0 flex-1 items-center gap-2 px-2">
           <Search aria-hidden="true" className="size-4 shrink-0 text-slate-400" />

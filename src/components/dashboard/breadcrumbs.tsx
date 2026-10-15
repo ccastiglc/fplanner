@@ -1,34 +1,25 @@
-"use client";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
+import { NAV_ITEMS } from "@/components/dashboard/navigation";
 
-interface BreadcrumbsProps {
-  path: string[];
-}
-
-export function Breadcrumbs({ path }: BreadcrumbsProps) {
-  const segments = path.filter((s) => s !== "" && s !== "dashboard");
+export function Breadcrumbs({ path }: { path: string[] }) {
+  const currentModule = NAV_ITEMS.find((item) => item.href === `/dashboard/${path[0]}`);
+  const items = [{ label: "Dashboard", href: "/dashboard" }];
+  if (currentModule) {
+    items.push({ label: currentModule.label, href: currentModule.href });
+    if (path[1]) {
+      const noun = path[0] === "staff" ? "staff" : currentModule.label.slice(0, -1).toLowerCase();
+      items.push({ label: path[1] === "new" ? `Add ${noun}` : `${noun[0].toUpperCase()}${noun.slice(1)} profile`, href: "" });
+    }
+  }
 
   return (
-    <nav aria-label="breadcrumb" className="mb-4">
-      <ol className="flex space-x-1">
-        <li className="hidden sm:flex">
-          <a
-            href="/dashboard"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Dashboard
-          </a>
-        </li>
-        {segments.map((segment, index) => (
-          <li key={index} className="flex items-center text-sm">
-            <a
-              href={`/dashboard/${segments.slice(0, index + 1).join("/")}`}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {segment}
-            </a>
-            {index < segments.length - 1 ? (
-              <span className="mx-2 text-xs text-muted-foreground">/</span>
-            ) : null}
+    <nav aria-label="Breadcrumb" className="shell-breadcrumbs">
+      <ol>
+        {items.map((item, index) => (
+          <li key={item.label}>
+            {index > 0 && <ChevronRight aria-hidden="true" />}
+            {index === items.length - 1 ? <span aria-current="page">{item.label}</span> : <Link href={item.href}>{item.label}</Link>}
           </li>
         ))}
       </ol>

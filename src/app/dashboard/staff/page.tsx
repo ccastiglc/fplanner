@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader } from "@/components/common/page-header";
 import { Plus, Search, Users } from "lucide-react";
 import { eventAccess } from "@/lib/event-access";
 import { prisma } from "@/lib/prisma";
@@ -32,18 +33,9 @@ export default async function StaffPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className="mx-auto w-full max-w-[1400px]">
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-sm font-medium text-orange-600">Team management</p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Staff</h1>
-          <p className="mt-1 text-sm text-slate-500">Staff profiles used by event assignments.</p>
-        </div>
-        {user.role === "ADMIN" && (
-          <Link href="/dashboard/staff/new" className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-semibold text-brand-accent-foreground transition hover:bg-orange-600">
-            <Plus className="size-4" />Add staff
-          </Link>
-        )}
-      </div>
+      <PageHeader title="Staff" eyebrow="Team management" description="Staff profiles used by event assignments.">
+        {user.role === "ADMIN" && <Link href="/dashboard/staff/new" className="ui-button ui-button-primary"><Plus aria-hidden="true" className="size-4" />Add staff</Link>}
+      </PageHeader>
       <form method="get" className="mb-5 flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:flex-row">
         <label className="flex min-w-0 flex-1 items-center gap-2 px-2">
           <Search aria-hidden="true" className="size-4 shrink-0 text-slate-400" />

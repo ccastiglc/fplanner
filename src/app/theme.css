@@ -43,6 +43,7 @@
   --motion-panel: 180ms;
   --shadow-surface: 0 1px 3px #0b112008;
   --shadow-elevated: 0 8px 24px #0b112014;
+  --overlay: #0b11207a;
 }
 
 .dark {
@@ -78,6 +79,7 @@
   --status-cancelled: #fca5a5;
   --shadow-surface: 0 1px 3px #00000020;
   --shadow-elevated: 0 8px 24px #00000040;
+  --overlay: #000000a3;
 }
 
 :root, .dark {
