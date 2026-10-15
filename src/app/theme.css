@@ -25,6 +25,7 @@
   --success-foreground: #065f46;
   --warning-foreground: #92400e;
   --error-foreground: #991b1b;
+  --destructive-foreground: #fff;
   --information-foreground: #1e40af;
   --status-confirmed: #047857;
   --status-contract: #1d4ed8;
@@ -70,6 +71,7 @@
   --success-foreground: #6ee7b7;
   --warning-foreground: #fde68a;
   --error-foreground: #fca5a5;
+  --destructive-foreground: #111827;
   --information-foreground: #93c5fd;
   --status-confirmed: #6ee7b7;
   --status-contract: #93c5fd;

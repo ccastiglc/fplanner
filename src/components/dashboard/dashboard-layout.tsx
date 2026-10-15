@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
 import { SidebarNavigation } from "@/components/dashboard/sidebar-navigation";
 import { Breadcrumbs } from "@/components/dashboard/breadcrumbs";
 import { UserMenu } from "@/components/dashboard/user-menu";
+import { dismissDialogBackdrop, trapDialogTab } from "@/lib/dialog-interactions";
 
 export default function DashboardLayout({ children, canManageClients, businessName, logoUrl, userName }: Readonly<{
   children: React.ReactNode;
@@ -66,23 +67,7 @@ export default function DashboardLayout({ children, canManageClients, businessNa
       <dialog ref={drawer} aria-label={`${businessName} navigation`} className="shell-drawer" onClose={() => {
         setMobileOpen(false);
         if (window.matchMedia("(max-width: 1023px)").matches) mobileTrigger.current?.focus();
-      }} onKeyDown={(event) => {
-        if (event.key !== "Tab") return;
-        const controls = event.currentTarget.querySelectorAll<HTMLElement>("a[href], button:not([disabled])");
-        const first = controls[0];
-        const last = controls[controls.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last?.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first?.focus();
-        }
-      }} onClick={(event) => {
-        if (event.target !== event.currentTarget) return;
-        const bounds = event.currentTarget.getBoundingClientRect();
-        if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) event.currentTarget.close();
-      }}>
+      }} onKeyDown={trapDialogTab} onClick={dismissDialogBackdrop}>
         <div className="shell-drawer-heading"><span className="shell-caption">Workspace</span><button type="button" className="shell-icon-button" aria-label="Close navigation" onClick={() => drawer.current?.close()}><X aria-hidden="true" /></button></div>
         <SidebarNavigation {...navigation} onNavigate={() => drawer.current?.close()} />
       </dialog>

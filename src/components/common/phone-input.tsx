@@ -12,6 +12,7 @@ export default function PhoneInput({
   inputClassName,
   selectClassName,
   required,
+  label,
 }: {
   countryName: string;
   numberName: string;
@@ -21,6 +22,7 @@ export default function PhoneInput({
   inputClassName?: string;
   selectClassName?: string;
   required?: boolean;
+  label: string;
 }) {
   const initialCountry = isCountryCode(defaultCountry) ? defaultCountry.toUpperCase() : DEFAULT_PHONE_COUNTRY;
   const [country, setCountry] = useState(initialCountry);
@@ -32,11 +34,11 @@ export default function PhoneInput({
   }
 
   return (
-    <div className={`flex gap-2 ${className ?? ""}`}>
-      <select name={countryName} value={country} onChange={(event) => changeCountry(event.target.value)} aria-label="Country calling code" className={selectClassName}>
+    <div className={`ui-phone-input ${className ?? ""}`}>
+      <select name={countryName} value={country} onChange={(event) => changeCountry(event.target.value)} aria-label={`${label} country calling code`} className={selectClassName ?? "ui-input"}>
         {PHONE_COUNTRIES.map((option) => <option key={option.code} value={option.code}>{option.code} {option.dial}</option>)}
       </select>
-      <input type="tel" inputMode="tel" name={numberName} value={number} onChange={(event) => setNumber(formatPhone(event.target.value, country))} required={required} maxLength={40} className={inputClassName} />
+      <input type="tel" inputMode="tel" name={numberName} aria-label={label} value={number} onChange={(event) => setNumber(formatPhone(event.target.value, country))} required={required} maxLength={40} className={inputClassName ?? "ui-input"} />
     </div>
   );
 }

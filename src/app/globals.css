@@ -2,6 +2,7 @@
 @import "./theme.css";
 @import "../components/dashboard/shell.css";
 @import "../components/dashboard/dashboard.css";
+@import "./records.css";
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
@@ -87,14 +88,13 @@ body {
 .ui-button-primary:hover { background: var(--primary-hover); color: var(--primary-hover-foreground); }
 [class~="bg-orange-500"][class~="hover:bg-orange-600"]:hover { color: var(--primary-hover-foreground); }
 .ui-button:disabled, .ui-input:disabled { cursor: not-allowed; color: var(--disabled); background: var(--surface-secondary); }
-.ui-input { width: 100%; background: var(--input); color: var(--foreground); border-color: var(--input-border); }
+.ui-input { width: 100%; min-width: 0; background: var(--input); color: var(--foreground); border-color: var(--input-border); font-weight: 400; }
 .ui-input::placeholder { color: var(--muted-foreground); }
 .ui-input[readonly] { background: var(--surface-secondary); }
 .ui-input[aria-invalid="true"] { border-color: var(--error); }
 .ui-surface { border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow-surface); }
 .appearance-control { display: flex; align-items: center; gap: 0.5rem; color: var(--secondary-foreground); }
 .appearance-select { max-width: 8rem; background: var(--input); color: var(--foreground); border-color: var(--input-border); cursor: pointer; }
-.appearance-select:disabled { color: var(--disabled); cursor: wait; }
 .event-status { --event-status-color: var(--status-completed); background: color-mix(in srgb, var(--event-status-color) 10%, var(--surface)); color: var(--event-status-color); }
 .event-status-chip { border-color: var(--event-status-color); }
 .event-status-dot { background: var(--event-status-color); }

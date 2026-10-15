@@ -14,8 +14,8 @@ export function AppearanceSelector({ showLabel = false }) {
       <span className={showLabel ? "" : "sr-only"}>Appearance</span>
       <select
         className="appearance-select"
+        autoComplete="off"
         value={mounted ? theme ?? "system" : "system"}
-        disabled={!mounted}
         onChange={(event) => setTheme(event.target.value)}
       >
         <option value="light">Light</option>

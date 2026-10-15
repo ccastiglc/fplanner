@@ -53,64 +53,64 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
   }
   const presentLetters = new Set(groups.keys());
 
-  const eventRow = (event: (typeof records)[number], index: number) => (
-    <Link key={event.id} href={`/dashboard/events/${event.id}`} className={`flex flex-col gap-4 p-4 transition hover:bg-orange-50/40 sm:px-5 lg:flex-row lg:items-center ${index % 2 === 0 ? "bg-white" : "bg-slate-50/60"}`}>
+  const eventRow = (event: (typeof records)[number]) => (
+    <Link key={event.id} href={`/dashboard/events/${event.id}`} className="record-row">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <h3 className="font-semibold text-slate-900">{event.name}</h3>
+          <h3 className="font-medium text-foreground">{event.name}</h3>
           <span className={`rounded-full px-2.5 py-1 text-xs font-medium capitalize ${eventStatusColor(event.status).badge}`}>{event.status}</span>
         </div>
-        <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-sm text-slate-500"><CalendarDays className="size-4 shrink-0" />{dateOnly(event.eventDate)} · {event.type} · {event.client?.name ?? "No client"} · {event.venue?.name ?? "No venue"}</p>
+        <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground"><CalendarDays aria-hidden="true" className="size-4 shrink-0" />{dateOnly(event.eventDate)} · {event.type} · {event.client?.name ?? "No client"} · {event.venue?.name ?? "No venue"}</p>
       </div>
-      <div className="flex shrink-0 flex-wrap gap-x-5 gap-y-1 text-sm text-slate-500 lg:justify-end">
+      <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground lg:justify-end">
         <span>{event.staffAssignments.map((row) => row.staff.name).join(", ") || "No staff assigned"}</span>
       </div>
     </Link>
   );
 
   return (
-    <div className="mx-auto w-full max-w-[1400px]">
+    <div className="record-directory">
       <PageHeader title="Events" eyebrow="Event management" description="Browse, filter, and open event profiles.">
         {user.role === "ADMIN" && <Link href="/dashboard/events/new" className="ui-button ui-button-primary"><Plus aria-hidden="true" className="size-4" />Add event</Link>}
       </PageHeader>
-      <form method="get" className="mb-5 flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:flex-row sm:flex-wrap">
-        <label className="flex min-w-0 flex-1 items-center gap-2 px-2">
-          <Search aria-hidden="true" className="size-4 shrink-0 text-slate-400" />
-          <input name="q" type="search" maxLength={120} defaultValue={query.q} placeholder="Search events, clients, venues, or staff" className="min-w-0 flex-1 border-0 bg-transparent py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400" />
+      <form method="get" className="record-toolbar">
+        <label className="record-search">
+          <Search aria-hidden="true" />
+          <input name="q" type="search" aria-label="Search events" maxLength={120} defaultValue={query.q} placeholder="Search events, clients, venues, or staff" className="ui-input" />
         </label>
-        <select name="status" aria-label="Filter by status" defaultValue={query.status ?? ""} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100">
+        <select name="status" aria-label="Filter by status" defaultValue={query.status ?? ""} className="ui-input record-filter">
           <option value="">All statuses</option>
           {statuses.map((status) => <option key={status}>{status}</option>)}
         </select>
-        <select name="when" aria-label="Filter by date" defaultValue={when} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100">
+        <select name="when" aria-label="Filter by date" defaultValue={when} className="ui-input record-filter">
           <option value="all">All dates</option>
           <option value="upcoming">Upcoming events</option>
           <option value="past">Past events</option>
         </select>
-        <select name="sort" aria-label="Sort events" defaultValue={sort} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100">
+        <select name="sort" aria-label="Sort events" defaultValue={sort} className="ui-input record-filter">
           <option value="name">Name (A–Z)</option>
           <option value="date-asc">Date (ascending)</option>
           <option value="date-desc">Date (descending)</option>
         </select>
-        <button type="submit" className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Search events</button>
-        {hasFilters && <Link href="/dashboard/events" className="rounded-xl border border-slate-200 px-4 py-2.5 text-center text-sm font-medium text-slate-600 hover:bg-slate-50">Clear</Link>}
+        <button type="submit" className="ui-button">Search events</button>
+        {hasFilters && <Link href="/dashboard/events" className="ui-button">Clear</Link>}
       </form>
       <div className={`grid items-start gap-4 ${sort === "name" ? "lg:grid-cols-[minmax(0,1fr)_56px]" : ""}`}>
-        <section aria-label="Event records" className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-4 text-sm font-medium text-slate-600"><CalendarDays className="size-4 text-orange-500" />{events.length} {events.length === 1 ? "event" : "events"}{term ? ` matching “${term}”` : ""}</div>
+        <section aria-label="Event records" className="record-list ui-surface">
+          <div className="record-results-heading"><CalendarDays aria-hidden="true" />{events.length} {events.length === 1 ? "event" : "events"}{term ? ` matching “${term}”` : ""}</div>
           {events.length === 0 ? (
             <div className="px-5 py-14 text-center">
-              <CalendarDays className="mx-auto size-8 text-slate-300" />
-              <p className="mt-3 text-sm font-medium text-slate-700">{hasFilters ? "No matching events" : "No events yet"}</p>
-              <p className="mt-1 text-sm text-slate-500">{hasFilters ? "Try a different search, status, or date filter." : "Add an event or import your DJEP events."}</p>
+              <CalendarDays aria-hidden="true" className="mx-auto size-8 text-muted-foreground" />
+              <p className="mt-3 text-sm font-medium text-foreground">{hasFilters ? "No matching events" : "No events yet"}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{hasFilters ? "Try a different search, status, or date filter." : "Add an event or import your DJEP events."}</p>
             </div>
           ) : sort === "name" ? (
             <div>
               {ALPHABET.filter((letter) => groups.has(letter)).map((letter) => (
                 <section key={letter} id={`events-${letter}`} className="scroll-mt-28">
-                  <h2 className="border-b border-slate-100 bg-slate-50 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-slate-500">{letter}</h2>
-                  <div className="divide-y divide-slate-100">
-                    {groups.get(letter)?.map((event, eventIndex) => eventRow(event, eventIndex))}
+                  <h2 className="record-group-label">{letter}</h2>
+                  <div>
+                    {groups.get(letter)?.map(eventRow)}
                   </div>
                 </section>
               ))}
@@ -119,9 +119,9 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
             <div>
               {[...months.values()].map((month) => (
                 <section key={month.label} className="scroll-mt-28">
-                  <h2 className="border-b border-slate-100 bg-slate-50 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-slate-500">{month.label}</h2>
-                  <div className="divide-y divide-slate-100">
-                    {month.events.map((event, eventIndex) => eventRow(event, eventIndex))}
+                  <h2 className="record-group-label">{month.label}</h2>
+                  <div>
+                    {month.events.map(eventRow)}
                   </div>
                 </section>
               ))}

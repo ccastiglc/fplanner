@@ -36,6 +36,7 @@ for (const [theme, overrides] of [["light", {}], ["dark", dark]]) {
     ...["--foreground", "--secondary-foreground", "--muted-foreground"].flatMap((text) => ["--surface", "--surface-secondary", "--background"].map((surface) => [text, surface])),
     ["--primary-foreground", "--primary"],
     ["--primary-hover-foreground", "--primary-hover"],
+    ["--destructive-foreground", "--error-foreground"],
     ...["success", "warning", "error", "information"].map((status) => [`--${status}-foreground`, `--${status}-background`]),
     ...["confirmed", "contract", "pending", "lead", "completed", "cancelled"].map((status) => [`--status-${status}`, `color-mix(in srgb, var(--status-${status}) 10%, var(--surface))`]),
     ["--input-border", "--input", 3],

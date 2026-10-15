@@ -62,39 +62,39 @@ export default function VenueFiles({ venueId, files }: { venueId: string; files:
   return (
     <div className="space-y-4 sm:col-span-2">
       <div>
-        <h3 className="text-sm font-semibold text-slate-900">Documents and photos</h3>
-        <p className="mt-1 text-xs text-slate-500">PDF, JPEG, PNG, or WebP · up to 10 MB per file · private to authorized admins.</p>
+        <h3 className="text-sm font-medium text-foreground">Documents and photos</h3>
+        <p className="mt-1 text-xs text-muted-foreground">PDF, JPEG, PNG, or WebP · up to 10 MB per file · private to authorized admins.</p>
       </div>
-      <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
+      <label className="ui-upload">
         <Upload className="size-4" aria-hidden="true" />
         {busy ? "Uploading…" : "Upload documents or photos"}
         <input type="file" multiple accept="application/pdf,image/jpeg,image/png,image/webp" disabled={busy} onChange={uploadFiles} className="sr-only" />
       </label>
-      {status && <p role="status" className="text-sm text-emerald-700">{status}</p>}
-      {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
+      {status && <p role="status" className="ui-feedback ui-feedback-success">{status}</p>}
+      {error && <p role="alert" className="ui-feedback ui-feedback-error">{error}</p>}
       {files.length > 0 && (
-        <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200">
+        <ul className="divide-y divide-border rounded-lg border border-border">
           {files.map((file) => {
             const image = file.mimeType.startsWith("image/");
             const href = `/plan/api/venue-files/${file.id}`;
             return (
               <li key={file.id} className="flex items-center gap-3 p-3">
                 {image ? (
-                  <Image src={href} alt={file.originalName} width={48} height={48} unoptimized className="size-12 rounded-lg border border-slate-200 object-cover" />
+                  <Image src={href} alt={file.originalName} width={48} height={48} unoptimized className="size-12 rounded-lg border border-border object-cover" />
                 ) : (
-                  <span className="grid size-12 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-500"><FileText className="size-5" aria-hidden="true" /></span>
+                  <span className="grid size-12 shrink-0 place-items-center rounded-lg bg-surface-secondary text-muted-foreground"><FileText className="size-5" aria-hidden="true" /></span>
                 )}
                 <div className="min-w-0 flex-1">
-                  <a href={href} target="_blank" rel="noreferrer" className="block truncate text-sm font-medium text-slate-800 hover:text-orange-600">{file.originalName}</a>
-                  <p className="mt-0.5 text-xs text-slate-500">{fileSize(file.size)} · {file.createdAt.slice(0, 10)}</p>
+                  <a href={href} target="_blank" rel="noreferrer" className="ui-link block break-words text-sm font-medium">{file.originalName}</a>
+                  <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">{fileSize(file.size)} · {file.createdAt.slice(0, 10)}</p>
                 </div>
-                {image && <ImageIcon className="size-4 shrink-0 text-slate-400" aria-hidden="true" />}
+                {image && <ImageIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
               </li>
             );
           })}
         </ul>
       )}
-      {!files.length && <p className="text-sm text-slate-500">No documents or photos uploaded.</p>}
+      {!files.length && <p className="text-sm text-muted-foreground">No documents or photos uploaded.</p>}
     </div>
   );
 }

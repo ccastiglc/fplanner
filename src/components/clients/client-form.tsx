@@ -7,6 +7,7 @@ import { deleteClient, saveClient } from "@/app/actions/clients";
 import ClientPhotoUpload from "@/components/clients/client-photo-upload";
 import ConfirmDeleteButton from "@/components/common/confirm-delete-button";
 import { DEFAULT_PHONE_COUNTRY, PHONE_COUNTRIES, formatPhone } from "@/lib/phone";
+import { PageHeader } from "@/components/common/page-header";
 
 const CLIENT_ROLES = [
   { value: "client", label: "Client" },
@@ -47,8 +48,7 @@ type ClientProfile = Client & {
   additionalContacts: (ClientAdditionalContact & { phoneNumbers: ClientPhoneNumber[] })[];
 };
 
-const inputClass = "mt-1.5 w-full rounded-xl border border-slate-300 px-3.5 py-3 font-normal outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100";
-const selectClass = "mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 font-normal outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100";
+const inputClass = "ui-input mt-1.5";
 
 function PhoneNumbersEditor({
   label,
@@ -65,29 +65,29 @@ function PhoneNumbersEditor({
 
   return (
     <fieldset className="space-y-3 sm:col-span-2">
-      <legend className="mb-1 text-sm font-medium text-slate-700">{label}</legend>
+      <legend className="ui-label mb-1">{label}</legend>
       {phones.map((phone, index) => (
-        <div key={phone.id ?? `${label}-${index}`} className="grid gap-3 rounded-xl bg-slate-50 p-3 sm:grid-cols-[150px_minmax(0,1fr)_180px_auto]">
-          <label className="block text-sm text-slate-600">
+        <div key={phone.id ?? `${label}-${index}`} className="grid gap-3 rounded-lg bg-surface-secondary p-3 lg:grid-cols-[120px_minmax(0,1fr)_120px_auto]">
+          <label className="ui-label">
             Country
-            <select value={phone.country} onChange={(event) => updatePhone(index, { country: event.target.value, number: formatPhone(phone.number, event.target.value) })} className={selectClass}>
+            <select value={phone.country} onChange={(event) => updatePhone(index, { country: event.target.value, number: formatPhone(phone.number, event.target.value) })} className={inputClass}>
               {PHONE_COUNTRIES.map((option) => <option key={option.code} value={option.code}>{option.code} {option.dial}</option>)}
             </select>
           </label>
-          <label className="block text-sm text-slate-600">
-            Phone number
+          <label className="ui-label">
+            Phone number <span aria-hidden="true" className="required-indicator">*</span>
             <input type="tel" inputMode="tel" value={phone.number} onChange={(event) => updatePhone(index, { number: formatPhone(event.target.value, phone.country) })} maxLength={40} required className={inputClass} />
           </label>
-          <label className="block text-sm text-slate-600">
+          <label className="ui-label">
             Type
-            <select value={phone.type} onChange={(event) => updatePhone(index, { type: event.target.value })} className={selectClass}>
+            <select value={phone.type} onChange={(event) => updatePhone(index, { type: event.target.value })} className={inputClass}>
               {PHONE_TYPES.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}
             </select>
           </label>
-          <button type="button" onClick={() => onChange(phones.filter((_, phoneIndex) => phoneIndex !== index))} className="self-end rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50">Remove</button>
+          <button type="button" onClick={() => onChange(phones.filter((_, phoneIndex) => phoneIndex !== index))} className="ui-button ui-button-danger-outline self-end">Remove</button>
         </div>
       ))}
-      <button type="button" onClick={() => onChange([...phones, { number: "", type: "mobile", country: DEFAULT_PHONE_COUNTRY }])} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-white">Add phone number</button>
+      <button type="button" onClick={() => onChange([...phones, { number: "", type: "mobile", country: DEFAULT_PHONE_COUNTRY }])} className="ui-button">Add phone number</button>
     </fieldset>
   );
 }
@@ -178,14 +178,9 @@ export default function ClientForm({
 
   return (
     <div className="mx-auto w-full max-w-4xl">
-      <div className="mb-5">
-        <p className="text-sm font-medium text-orange-600">Client records</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
-          {client ? "Edit client" : "Add client"}
-        </h1>
-      </div>
+      <PageHeader title={client ? "Edit client" : "Add client"} eyebrow="Client records" />
       {error && (
-        <p role="alert" className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p role="alert" className="ui-feedback ui-feedback-error mb-4">
           {error === "photo-url" ? "Photo URLs must use HTTPS." : "Check the client fields and try again."}
         </p>
       )}
@@ -197,7 +192,7 @@ export default function ClientForm({
           onUploaded={() => setPhotoUrl("")}
         />
       ) : (
-        <p className="mb-4 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
+        <p className="ui-feedback ui-feedback-information mb-4">
           Save the client profile before uploading photos. HTTPS photo URLs can be added now.
         </p>
       )}
@@ -213,7 +208,7 @@ export default function ClientForm({
           />
         </div>
       )}
-      <form action={saveClient} className="space-y-7 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+      <form action={saveClient} className="record-form ui-surface space-y-6">
         <input type="hidden" name="eventContextId" value={eventId ?? ""} />
         {client && <input type="hidden" name="clientId" value={client.id} />}
         <input type="hidden" name="clientPhonesJson" value={JSON.stringify(clientPhones)} />
@@ -221,97 +216,97 @@ export default function ClientForm({
         <input type="hidden" name="contactsJson" value={JSON.stringify(contacts)} />
 
         <section aria-labelledby="primary-client-heading" className="grid gap-5 sm:grid-cols-2">
-          <h2 id="primary-client-heading" className="text-base font-semibold text-slate-900 sm:col-span-2">Primary client</h2>
-          <label className="block text-sm font-medium text-slate-700">
-            Client name
+          <h2 id="primary-client-heading" className="text-base font-semibold text-foreground sm:col-span-2">Primary client</h2>
+          <label className="ui-label">
+            Client name <span aria-hidden="true" className="required-indicator">*</span>
             <input name="name" required maxLength={160} defaultValue={client?.name ?? ""} className={inputClass} />
           </label>
-          <label className="block text-sm font-medium text-slate-700">
+          <label className="ui-label">
             Phonetic pronunciation
             <input name="pronunciation" maxLength={160} defaultValue={client?.pronunciation ?? ""} placeholder="How to pronounce the name" className={inputClass} />
           </label>
-          <label className="block text-sm font-medium text-slate-700">
+          <label className="ui-label">
             Role
-            <select name="role" defaultValue={client?.role ?? "client"} className={selectClass}>
+            <select name="role" defaultValue={client?.role ?? "client"} className={inputClass}>
               {CLIENT_ROLES.map((role) => <option key={role.value} value={role.value}>{role.label}</option>)}
               {client?.role && !CLIENT_ROLES.some((role) => role.value === client.role) && <option value={client.role}>{client.role}</option>}
             </select>
           </label>
-          <label className="block text-sm font-medium text-slate-700 sm:col-span-2">
+          <label className="ui-label sm:col-span-2">
             Email address
             <input name="email" type="email" maxLength={254} defaultValue={client?.email ?? ""} className={inputClass} />
           </label>
           <PhoneNumbersEditor label="Phone numbers" phones={clientPhones} onChange={setClientPhones} />
-          <label className="block text-sm font-medium text-slate-700 sm:col-span-2">
+          <label className="ui-label sm:col-span-2">
             Photo URL
             <input name="photoUrl" type="url" placeholder="https://example.com/photo.jpg" value={photoUrl} onChange={(event) => setPhotoUrl(event.target.value)} className={inputClass} />
           </label>
         </section>
 
-        <section aria-labelledby="mailing-address-heading" className="grid gap-5 border-t border-slate-100 pt-6 sm:grid-cols-2">
-          <h2 id="mailing-address-heading" className="text-base font-semibold text-slate-900 sm:col-span-2">Mailing address</h2>
-          <label className="block text-sm font-medium text-slate-700 sm:col-span-2">
+        <section aria-labelledby="mailing-address-heading" className="grid gap-5 border-t border-border pt-6 sm:grid-cols-2">
+          <h2 id="mailing-address-heading" className="text-base font-semibold text-foreground sm:col-span-2">Mailing address</h2>
+          <label className="ui-label sm:col-span-2">
             Street address
             <input name="address" maxLength={2000} defaultValue={client?.address ?? ""} className={inputClass} />
           </label>
-          <label className="block text-sm font-medium text-slate-700">
+          <label className="ui-label">
             ZIP code
             <input name="postalCode" inputMode="numeric" maxLength={32} value={postalCode} onChange={(event) => setPostalCode(event.target.value)} onBlur={lookupPostalCode} className={inputClass} />
-            {postalStatus && <span role="status" className="mt-1 block text-xs font-normal text-slate-500">{postalStatus}</span>}
+            {postalStatus && <span role="status" className="mt-1 block text-xs font-normal text-muted-foreground">{postalStatus}</span>}
           </label>
-          <label className="block text-sm font-medium text-slate-700">
+          <label className="ui-label">
             City
             <input name="city" maxLength={120} value={city} onChange={(event) => setCity(event.target.value)} className={inputClass} />
           </label>
-          <label className="block text-sm font-medium text-slate-700">
+          <label className="ui-label">
             State / Province
             <input name="state" maxLength={120} value={state} onChange={(event) => setState(event.target.value)} className={inputClass} />
           </label>
-          <label className="block text-sm font-medium text-slate-700">
+          <label className="ui-label">
             Country
             <input name="country" maxLength={120} value={country} onChange={(event) => setCountry(event.target.value)} className={inputClass} />
           </label>
         </section>
 
-        <section aria-labelledby="persons-heading" className="space-y-4 border-t border-slate-100 pt-6">
+        <section aria-labelledby="persons-heading" className="space-y-4 border-t border-border pt-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 id="persons-heading" className="text-base font-semibold text-slate-900">Additional persons</h2>
-              <p className="mt-1 text-sm text-slate-500">People in this client group, such as both partners in a wedding.</p>
+              <h2 id="persons-heading" className="text-base font-semibold text-foreground">Additional persons</h2>
+              <p className="mt-1 text-sm text-muted-foreground">People in this client group, such as both partners in a wedding.</p>
             </div>
-            <button type="button" disabled={persons.length >= 3} onClick={() => setPersons((current) => current.length < 3 ? [...current, { name: "", pronunciation: "", role: "client", email: "", photoUrl: "", phoneNumbers: [] }] : current)} className="rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">{persons.length >= 3 ? "Maximum 3 persons" : "Add person"}</button>
+            <button type="button" disabled={persons.length >= 3} onClick={() => setPersons((current) => current.length < 3 ? [...current, { name: "", pronunciation: "", role: "client", email: "", photoUrl: "", phoneNumbers: [] }] : current)} className="ui-button">{persons.length >= 3 ? "Maximum 3 persons" : "Add person"}</button>
           </div>
           {persons.map((person, index) => {
             const personPhoto = person.photoStorageKey
               ? `/plan/api/client-photos/${person.photoStorageKey}`
               : person.photoUrl;
             return (
-              <article key={person.id ?? `new-person-${index}`} className="space-y-4 rounded-xl border border-slate-200 p-4">
+              <article key={person.id ?? `new-person-${index}`} className="space-y-4 rounded-lg border border-border p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <h3 className="text-sm font-semibold text-slate-800">Person {index + 2}</h3>
-                  <button type="button" onClick={() => setPersons((current) => current.filter((_, personIndex) => personIndex !== index))} className="text-sm font-medium text-red-600 hover:text-red-700">Remove</button>
+                  <h3 className="text-sm font-medium text-foreground">Person {index + 2}</h3>
+                  <button type="button" onClick={() => setPersons((current) => current.filter((_, personIndex) => personIndex !== index))} className="ui-text-danger text-sm">Remove</button>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="block text-sm font-medium text-slate-700">
-                    Name
+                  <label className="ui-label">
+                    Name <span aria-hidden="true" className="required-indicator">*</span>
                     <input value={person.name} onChange={(event) => updatePerson(index, { name: event.target.value })} required maxLength={160} className={inputClass} />
                   </label>
-                  <label className="block text-sm font-medium text-slate-700">
+                  <label className="ui-label">
                     Phonetic pronunciation
                     <input value={person.pronunciation} onChange={(event) => updatePerson(index, { pronunciation: event.target.value })} maxLength={160} placeholder="How to pronounce the name" className={inputClass} />
                   </label>
-                  <label className="block text-sm font-medium text-slate-700">
+                  <label className="ui-label">
                     Role
-                    <select value={person.role} onChange={(event) => updatePerson(index, { role: event.target.value })} className={selectClass}>
+                    <select value={person.role} onChange={(event) => updatePerson(index, { role: event.target.value })} className={inputClass}>
                       {CLIENT_ROLES.map((role) => <option key={role.value} value={role.value}>{role.label}</option>)}
                     </select>
                   </label>
-                  <label className="block text-sm font-medium text-slate-700">
+                  <label className="ui-label">
                     Email address
                     <input type="email" value={person.email} onChange={(event) => updatePerson(index, { email: event.target.value })} maxLength={254} className={inputClass} />
                   </label>
                   <PhoneNumbersEditor label="Phone numbers" phones={person.phoneNumbers} onChange={(phoneNumbers) => updatePerson(index, { phoneNumbers })} />
-                  <label className="block text-sm font-medium text-slate-700 sm:col-span-2">
+                  <label className="ui-label sm:col-span-2">
                     Photo URL
                     <input type="url" value={person.photoUrl} onChange={(event) => updatePerson(index, { photoUrl: event.target.value, photoStorageKey: null })} placeholder="https://example.com/photo.jpg" className={inputClass} />
                   </label>
@@ -327,7 +322,7 @@ export default function ClientForm({
                       />
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-500 sm:col-span-2">Save the client profile before uploading this person’s photo.</p>
+                    <p className="text-xs text-muted-foreground sm:col-span-2">Save the client profile before uploading this person’s photo.</p>
                   )}
                 </div>
               </article>
@@ -335,40 +330,40 @@ export default function ClientForm({
           })}
         </section>
 
-        <section aria-labelledby="notes-heading" className="border-t border-slate-100 pt-6">
-          <label htmlFor="notes" id="notes-heading" className="block text-sm font-medium text-slate-700">
+        <section aria-labelledby="notes-heading" className="border-t border-border pt-6">
+          <label htmlFor="notes" id="notes-heading" className="ui-label">
             Notes
             <textarea id="notes" name="notes" rows={5} maxLength={10000} defaultValue={client?.notes ?? ""} className={`${inputClass} resize-y`} />
           </label>
         </section>
 
-        <section aria-labelledby="additional-contacts-heading" className="space-y-4 border-t border-slate-100 pt-6">
+        <section aria-labelledby="additional-contacts-heading" className="space-y-4 border-t border-border pt-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 id="additional-contacts-heading" className="text-base font-semibold text-slate-900">Additional Contacts</h2>
-              <p className="mt-1 text-sm text-slate-500">Other people connected to the client, such as a parent or planner.</p>
+              <h2 id="additional-contacts-heading" className="text-base font-semibold text-foreground">Additional contacts</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Other people connected to the client, such as a parent or planner.</p>
             </div>
-            <button type="button" onClick={() => setContacts((current) => [...current, { name: "", pronunciation: "", role: "", email: "", phoneNumbers: [] }])} className="rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Add contact</button>
+            <button type="button" onClick={() => setContacts((current) => [...current, { name: "", pronunciation: "", role: "", email: "", phoneNumbers: [] }])} className="ui-button">Add contact</button>
           </div>
           {contacts.map((contact, index) => (
-            <article key={contact.id ?? `new-contact-${index}`} className="grid gap-4 rounded-xl border border-slate-200 p-4 sm:grid-cols-2">
+            <article key={contact.id ?? `new-contact-${index}`} className="grid gap-4 rounded-lg border border-border p-4 sm:grid-cols-2">
               <div className="flex items-center justify-between gap-3 sm:col-span-2">
-                <h3 className="text-sm font-semibold text-slate-800">Contact {index + 1}</h3>
-                <button type="button" onClick={() => setContacts((current) => current.filter((_, contactIndex) => contactIndex !== index))} className="text-sm font-medium text-red-600 hover:text-red-700">Remove</button>
+                <h3 className="text-sm font-medium text-foreground">Contact {index + 1}</h3>
+                <button type="button" onClick={() => setContacts((current) => current.filter((_, contactIndex) => contactIndex !== index))} className="ui-text-danger text-sm">Remove</button>
               </div>
-              <label className="block text-sm font-medium text-slate-700">
-                Name
+              <label className="ui-label">
+                Name <span aria-hidden="true" className="required-indicator">*</span>
                 <input value={contact.name} onChange={(event) => updateContact(index, { name: event.target.value })} required maxLength={160} className={inputClass} />
               </label>
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="ui-label">
                 Phonetic pronunciation
                 <input value={contact.pronunciation} onChange={(event) => updateContact(index, { pronunciation: event.target.value })} maxLength={160} placeholder="How to pronounce the name" className={inputClass} />
               </label>
-              <label className="block text-sm font-medium text-slate-700">
-                Role
+              <label className="ui-label">
+                Role <span aria-hidden="true" className="required-indicator">*</span>
                 <input value={contact.role} onChange={(event) => updateContact(index, { role: event.target.value })} required maxLength={80} placeholder="Mother of Bride" className={inputClass} />
               </label>
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="ui-label">
                 Email
                 <input type="email" value={contact.email} onChange={(event) => updateContact(index, { email: event.target.value })} maxLength={254} className={inputClass} />
               </label>
@@ -377,9 +372,9 @@ export default function ClientForm({
           ))}
         </section>
 
-        <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-5">
-          <Link href="/dashboard/clients" className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">Cancel</Link>
-          <button type="submit" className="rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-semibold text-brand-accent-foreground hover:bg-orange-600">Save client</button>
+        <div className="flex flex-wrap justify-end gap-3 border-t border-border pt-5">
+          <Link href="/dashboard/clients" className="ui-button">Cancel</Link>
+          <button type="submit" className="ui-button ui-button-primary">Save client</button>
         </div>
       </form>
     </div>

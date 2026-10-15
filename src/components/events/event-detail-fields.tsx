@@ -7,7 +7,7 @@ export default function EventDetailFields({ details }: { details: Record<string,
   return EVENT_DETAIL_GROUPS.map((group) => (
     <EventSection key={group.id} id={group.id} title={group.title} grid>
       {group.fields.map((label) => (
-        <label key={label} className={`block text-sm font-medium text-slate-700 ${label.includes("Description") || label.includes("Notes") ? "sm:col-span-2" : ""}`}>
+        <label key={label} className={`ui-label ${label.includes("Description") || label.includes("Notes") ? "sm:col-span-2" : ""}`}>
           {label}
           {BOOLEAN_FIELDS.has(label) ? (
             <select name={`detail:${label}`} defaultValue={details[label] ?? "false"} className={eventInputClass}><option value="false">No</option><option value="true">Yes</option></select>
@@ -18,7 +18,7 @@ export default function EventDetailFields({ details }: { details: Record<string,
           )}
         </label>
       ))}
-      {group.title === "Financials" && <p className="text-xs text-slate-500 sm:col-span-2">Imported payment totals and installment amounts are historical values, not additional payment transactions.</p>}
+      {group.title === "Financials" && <p className="text-xs text-muted-foreground sm:col-span-2">Imported payment totals and installment amounts are historical values, not additional payment transactions.</p>}
     </EventSection>
   ));
 }

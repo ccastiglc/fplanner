@@ -32,43 +32,43 @@ export default async function StaffPage({ searchParams }: { searchParams: Promis
   const presentLetters = new Set(groups.keys());
 
   return (
-    <div className="mx-auto w-full max-w-[1400px]">
+    <div className="record-directory">
       <PageHeader title="Staff" eyebrow="Team management" description="Staff profiles used by event assignments.">
         {user.role === "ADMIN" && <Link href="/dashboard/staff/new" className="ui-button ui-button-primary"><Plus aria-hidden="true" className="size-4" />Add staff</Link>}
       </PageHeader>
-      <form method="get" className="mb-5 flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:flex-row">
-        <label className="flex min-w-0 flex-1 items-center gap-2 px-2">
-          <Search aria-hidden="true" className="size-4 shrink-0 text-slate-400" />
-          <input name="q" type="search" maxLength={120} defaultValue={term} placeholder="Search names, emails, phones, or specialties" className="min-w-0 flex-1 border-0 bg-transparent py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400" />
+      <form method="get" className="record-toolbar">
+        <label className="record-search">
+          <Search aria-hidden="true" />
+          <input name="q" type="search" aria-label="Search staff" maxLength={120} defaultValue={term} placeholder="Search names, emails, phones, or specialties" className="ui-input" />
         </label>
-        <button type="submit" className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Search staff</button>
-        {term && <Link href="/dashboard/staff" className="rounded-xl border border-slate-200 px-4 py-2.5 text-center text-sm font-medium text-slate-600 hover:bg-slate-50">Clear</Link>}
+        <button type="submit" className="ui-button">Search staff</button>
+        {term && <Link href="/dashboard/staff" className="ui-button">Clear</Link>}
       </form>
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_56px]">
-        <section aria-label="Staff records" className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-4 text-sm font-medium text-slate-600"><Users className="size-4 text-orange-500" />{staff.length} {staff.length === 1 ? "staff member" : "staff members"}{term ? ` matching “${term}”` : ""}</div>
+        <section aria-label="Staff records" className="record-list ui-surface">
+          <div className="record-results-heading"><Users aria-hidden="true" />{staff.length} {staff.length === 1 ? "staff member" : "staff members"}{term ? ` matching “${term}”` : ""}</div>
           {staff.length === 0 ? (
             <div className="px-5 py-14 text-center">
-              <Users className="mx-auto size-8 text-slate-300" />
-              <p className="mt-3 text-sm font-medium text-slate-700">{term ? "No matching staff" : "No staff yet"}</p>
-              <p className="mt-1 text-sm text-slate-500">{term ? "Try a different name, email, phone, or specialty." : "Add a staff profile to use in event assignments."}</p>
+              <Users aria-hidden="true" className="mx-auto size-8 text-muted-foreground" />
+              <p className="mt-3 text-sm font-medium text-foreground">{term ? "No matching staff" : "No staff yet"}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{term ? "Try a different name, email, phone, or specialty." : "Add a staff profile to use in event assignments."}</p>
             </div>
           ) : (
             <div>
               {ALPHABET.filter((letter) => groups.has(letter)).map((letter) => (
                 <section key={letter} id={`staff-${letter}`} className="scroll-mt-28">
-                  <h2 className="border-b border-slate-100 bg-slate-50 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-slate-500">{letter}</h2>
-                  <div className="divide-y divide-slate-100">
-                    {groups.get(letter)?.map((person, personIndex) => (
-                      <Link key={person.id} href={`/dashboard/staff/${person.id}`} className={`flex flex-col gap-4 p-4 transition hover:bg-orange-50/40 sm:px-5 lg:flex-row lg:items-center ${personIndex % 2 === 0 ? "bg-white" : "bg-slate-50/60"}`}>
+                  <h2 className="record-group-label">{letter}</h2>
+                  <div>
+                    {groups.get(letter)?.map((person) => (
+                      <Link key={person.id} href={`/dashboard/staff/${person.id}`} className="record-row">
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="font-semibold text-slate-900">{person.name}</h3>
-                            <span className={`rounded-full px-2.5 py-1 text-xs font-medium capitalize ${person.status === "active" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{person.status}</span>
+                            <h3 className="font-medium text-foreground">{person.name}</h3>
+                            <span className={`ui-badge capitalize ${person.status === "active" ? "record-status-active" : ""}`}>{person.status}</span>
                           </div>
-                          <p className="mt-1.5 text-sm text-slate-500">{person.specialty || "No specialty recorded"}</p>
+                          <p className="mt-1.5 text-sm text-muted-foreground">{person.specialty || "No specialty recorded"}</p>
                         </div>
-                        <div className="flex shrink-0 flex-wrap gap-x-5 gap-y-1 text-sm text-slate-500 lg:justify-end">
+                        <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground lg:justify-end">
                           <span>{person.email || "No email"}</span>
                           <span>{person.phone || "No phone"}</span>
                         </div>

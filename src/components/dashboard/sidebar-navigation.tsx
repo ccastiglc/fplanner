@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NAV_ITEMS } from "@/components/dashboard/navigation";
+import { initials } from "@/lib/utils";
 
 export function SidebarNavigation({ activeHref, canManageClients, businessName, logoUrl, collapsed = false, onNavigate }: {
   activeHref: string;
@@ -9,15 +10,13 @@ export function SidebarNavigation({ activeHref, canManageClients, businessName, 
   collapsed?: boolean;
   onNavigate?: () => void;
 }) {
-  const initials = businessName.trim().split(/\s+/).slice(0, 2).map((word) => word[0]).join("").toUpperCase();
-
   return (
     <>
       <Link href="/dashboard" aria-label={`${businessName} dashboard home`} className="shell-brand" onClick={onNavigate} title={collapsed ? businessName : undefined}>
         {logoUrl ? (
           <img src={logoUrl} alt={`${businessName} logo`} width={40} height={40} className="shell-logo" />
         ) : (
-          <span aria-hidden="true" className="shell-monogram">{initials || "EP"}</span>
+          <span aria-hidden="true" className="shell-monogram">{initials(businessName)}</span>
         )}
         {!collapsed && <span className="shell-brand-copy"><span className="shell-business-name" title={businessName}>{businessName}</span><span className="shell-caption">Event Planner</span></span>}
       </Link>

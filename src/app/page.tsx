@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth, signIn } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { AppearanceSelector } from "@/components/appearance-selector";
+import { initials } from "@/lib/utils";
 
 function publicHttpsUrl(value: string | null | undefined) {
   if (!value) return null;
@@ -60,9 +61,9 @@ export default async function LoginPage({
             {secureLogoUrl ? (
               <img src={secureLogoUrl} alt={`${organization?.name ?? "Fredo Productions"} logo`} width={96} height={96} className="mx-auto size-20 rounded-2xl object-contain" />
             ) : (
-              <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-orange-500 text-lg font-bold text-brand-accent-foreground">FP</span>
+              <span className="mx-auto grid size-14 place-items-center rounded-xl bg-primary text-lg font-semibold text-primary-foreground">{initials(organization?.name ?? "Fredo Productions")}</span>
             )}
-            <p className="mt-5 text-sm font-semibold text-orange-600">{organization?.name ?? "Fredo Productions"}</p>
+            <p className="mt-5 text-sm font-medium text-secondary-foreground">{organization?.name ?? "Fredo Productions"}</p>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">Event Planner</h1>
             <p className="mt-2 text-sm text-muted-foreground">Sign in to manage your events.</p>
           </div>
@@ -73,7 +74,7 @@ export default async function LoginPage({
           )}
           <form action={authenticate} className="space-y-5">
             <div>
-              <label htmlFor="username" className="mb-1.5 block text-sm font-medium text-foreground">Username</label>
+              <label htmlFor="username" className="mb-1.5 block text-sm font-medium text-foreground">Username <span aria-hidden="true" className="required-indicator">*</span></label>
               <input
                 id="username"
                 name="username"
@@ -85,7 +86,7 @@ export default async function LoginPage({
               />
             </div>
             <div>
-              <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-foreground">Password</label>
+              <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-foreground">Password <span aria-hidden="true" className="required-indicator">*</span></label>
               <input
                 id="password"
                 name="password"

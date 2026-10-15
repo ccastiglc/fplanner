@@ -27,7 +27,7 @@ export default async function VenueProfilePage({
   return (
     <>
       <EventReturnLink eventId={query.eventId} />
-      {query.saved === "1" && <p role="status" className="mx-auto mb-4 max-w-5xl rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">Venue profile saved.</p>}
+      {query.saved === "1" && <p role="status" className="ui-feedback ui-feedback-success mx-auto mb-4 max-w-5xl">Venue profile saved.</p>}
       <VenueForm venue={venue} error={query.error} eventId={query.eventId} />
     </>
   );
