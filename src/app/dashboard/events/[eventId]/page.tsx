@@ -38,7 +38,7 @@ export default async function EventProfilePage({ params, searchParams }: { param
             <h3 className="mt-0.5 text-sm font-medium text-slate-600">Venue: {event.venue?.name ?? "Not selected"}</h3>
           </div>
           {people.length > 0 && (
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-end gap-3 self-stretch">
               {people.map((person) => (
                 <figure key={person.id} className="w-20">
                   {person.photo ? (
