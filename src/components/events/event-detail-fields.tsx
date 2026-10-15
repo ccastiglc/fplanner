@@ -1,7 +1,7 @@
 import { BOOLEAN_FIELDS, DATE_FIELDS, EVENT_DETAIL_GROUPS } from "@/lib/event-fields";
 import EventSection from "@/components/events/event-section";
 
-export const eventInputClass = "mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-normal text-slate-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100";
+export const eventInputClass = "ui-input mt-1.5 font-normal";
 
 export default function EventDetailFields({ details }: { details: Record<string, string> }) {
   return EVENT_DETAIL_GROUPS.map((group) => (

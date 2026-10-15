@@ -2,6 +2,7 @@ import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { auth, signIn } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { AppearanceSelector } from "@/components/appearance-selector";
 
 function publicHttpsUrl(value: string | null | undefined) {
   if (!value) return null;
@@ -52,8 +53,9 @@ export default async function LoginPage({
   return (
     <>
       <link rel="stylesheet" href={`/plan/api/brand-theme?v=${organization?.settings?.updatedAt.getTime() ?? 0}`} precedence="brand-theme" />
-      <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
-        <section className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-7 shadow-sm sm:p-9">
+      <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+        <section className="ui-surface w-full max-w-md p-7 sm:p-9">
+          <div className="mb-4 flex justify-end"><AppearanceSelector /></div>
           <div className="mb-8 text-center">
             {secureLogoUrl ? (
               <img src={secureLogoUrl} alt={`${organization?.name ?? "Fredo Productions"} logo`} width={96} height={96} className="mx-auto size-20 rounded-2xl object-contain" />
@@ -61,17 +63,17 @@ export default async function LoginPage({
               <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-orange-500 text-lg font-bold text-brand-accent-foreground">FP</span>
             )}
             <p className="mt-5 text-sm font-semibold text-orange-600">{organization?.name ?? "Fredo Productions"}</p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">Event Planner</h1>
-            <p className="mt-2 text-sm text-slate-500">Sign in to manage your events.</p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">Event Planner</h1>
+            <p className="mt-2 text-sm text-muted-foreground">Sign in to manage your events.</p>
           </div>
           {error === "invalid" && (
-            <p role="alert" className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+            <p role="alert" className="mb-4 rounded-xl bg-error-background px-4 py-3 text-sm text-error-foreground">
               Invalid username or password.
             </p>
           )}
           <form action={authenticate} className="space-y-5">
             <div>
-              <label htmlFor="username" className="mb-1.5 block text-sm font-medium text-slate-700">Username</label>
+              <label htmlFor="username" className="mb-1.5 block text-sm font-medium text-foreground">Username</label>
               <input
                 id="username"
                 name="username"
@@ -79,11 +81,11 @@ export default async function LoginPage({
                 autoComplete="username"
                 required
                 maxLength={32}
-                className="w-full rounded-xl border border-slate-300 px-3.5 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                className="ui-input"
               />
             </div>
             <div>
-              <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-slate-700">Password</label>
+              <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-foreground">Password</label>
               <input
                 id="password"
                 name="password"
@@ -91,10 +93,10 @@ export default async function LoginPage({
                 autoComplete="current-password"
                 required
                 maxLength={72}
-                className="w-full rounded-xl border border-slate-300 px-3.5 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                className="ui-input"
               />
             </div>
-            <button type="submit" className="w-full rounded-xl bg-orange-500 px-4 py-3 text-sm font-semibold text-brand-accent-foreground transition hover:bg-orange-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-200">
+            <button type="submit" className="ui-button ui-button-primary w-full">
               Sign in
             </button>
           </form>

@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "./theme.css";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
   --color-background: var(--background);
@@ -10,6 +12,39 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-success: var(--success);
   --color-error: var(--error);
+  --color-navigation: var(--navigation);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-elevated: var(--elevated);
+  --color-input: var(--input);
+  --color-input-border: var(--input-border);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-disabled: var(--disabled);
+  --color-divider: var(--border);
+  --color-hover: var(--hover);
+  --color-selected: var(--selected);
+  --color-selected-foreground: var(--foreground);
+  --color-focus: var(--focus);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--surface-secondary);
+  --color-warning: var(--warning);
+  --color-information: var(--information);
+  --color-success-background: var(--success-background);
+  --color-warning-background: var(--warning-background);
+  --color-error-background: var(--error-background);
+  --color-information-background: var(--information-background);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-error-foreground: var(--error-foreground);
+  --color-information-foreground: var(--information-foreground);
+  --color-success-border: var(--success-border);
+  --color-warning-border: var(--warning-border);
+  --color-error-border: var(--error-border);
+  --color-information-border: var(--information-border);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
   --color-orange-50: var(--brand-accent-50);
   --color-orange-100: var(--brand-accent-100);
   --color-orange-200: var(--brand-accent-200);
@@ -23,43 +58,6 @@
   --color-brand-accent-foreground: var(--brand-accent-foreground);
 }
 
-:root {
-  color-scheme: light;
-  --background: #f8fafc;
-  --foreground: #172033;
-  --surface: #ffffff;
-  --border: #e2e8f0;
-  --primary: #f97316;
-  --primary-foreground: #ffffff;
-  --muted-foreground: #64748b;
-  --success: #15803d;
-  --error: #b91c1c;
-  --brand-accent: #f97316;
-  --brand-accent-50: #fff7ed;
-  --brand-accent-100: #ffedd5;
-  --brand-accent-200: #fed7aa;
-  --brand-accent-300: #fdba74;
-  --brand-accent-400: #fb923c;
-  --brand-accent-600: #ea580c;
-  --brand-accent-700: #c2410c;
-  --brand-accent-800: #9a3412;
-  --brand-accent-900: #7c2d12;
-  --brand-accent-foreground: #172033;
-}
-
-.dark {
-  color-scheme: dark;
-  --background: #0f172a;
-  --foreground: #f8fafc;
-  --surface: #172033;
-  --border: #334155;
-  --primary: #fb923c;
-  --primary-foreground: #172033;
-  --muted-foreground: #94a3b8;
-  --success: #4ade80;
-  --error: #f87171;
-}
-
 * {
   box-sizing: border-box;
 }
@@ -68,6 +66,45 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+.ui-button, .ui-input, .appearance-select {
+  min-height: var(--control-height);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+}
+.ui-button { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background: var(--surface-secondary); color: var(--foreground); font-weight: 500; cursor: pointer; transition: background-color var(--motion-fast); }
+.ui-button:hover { background: var(--hover); }
+.ui-button-primary { background: var(--primary); color: var(--primary-foreground); border-color: transparent; }
+.ui-button-primary:hover { background: var(--primary-hover); color: var(--primary-hover-foreground); }
+[class~="bg-orange-500"][class~="hover:bg-orange-600"]:hover { color: var(--primary-hover-foreground); }
+.ui-button:disabled, .ui-input:disabled { cursor: not-allowed; color: var(--disabled); background: var(--surface-secondary); }
+.ui-input { width: 100%; background: var(--input); color: var(--foreground); border-color: var(--input-border); }
+.ui-input::placeholder { color: var(--muted-foreground); }
+.ui-input[readonly] { background: var(--surface-secondary); }
+.ui-input[aria-invalid="true"] { border-color: var(--error); }
+.ui-surface { border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow-surface); }
+.appearance-control { display: flex; align-items: center; gap: 0.5rem; color: var(--secondary-foreground); }
+.appearance-select { max-width: 8rem; background: var(--input); color: var(--foreground); border-color: var(--input-border); cursor: pointer; }
+.appearance-select:disabled { color: var(--disabled); cursor: wait; }
+.event-status { --event-status-color: var(--status-completed); background: color-mix(in srgb, var(--event-status-color) 10%, var(--surface)); color: var(--event-status-color); }
+.event-status-chip { border-color: var(--event-status-color); }
+.event-status-dot { background: var(--event-status-color); }
+.event-status-confirmed { --event-status-color: var(--status-confirmed); }
+.event-status-contract { --event-status-color: var(--status-contract); }
+.event-status-pending { --event-status-color: var(--status-pending); }
+.event-status-lead { --event-status-color: var(--status-lead); }
+.event-status-completed { --event-status-color: var(--status-completed); }
+.event-status-cancelled { --event-status-color: var(--status-cancelled); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
 
 .calendar-event-tooltip {

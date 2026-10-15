@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { logout } from "@/app/actions/auth";
+import { AppearanceSelector } from "@/components/appearance-selector";
 import {
   BriefcaseBusiness,
   Building2,
@@ -163,9 +164,12 @@ export default function DashboardLayout({
             <span aria-hidden="true" className="hidden text-slate-300 sm:inline">/</span>
             <span className="text-sm font-semibold text-slate-900">Event Planner</span>
           </div>
-          <form action={logout}>
-            <button type="submit" className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900">Sign out</button>
-          </form>
+          <div className="flex items-center gap-2">
+            <AppearanceSelector />
+            <form action={logout}>
+              <button type="submit" className="ui-button">Sign out</button>
+            </form>
+          </div>
         </header>
         <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
